@@ -1,0 +1,6 @@
+[submodule "implementation/gcc"]
+	path = implementation/gcc
+	url = https://github.com/ThePhD/gcc.git
+[submodule "implementation/clang"]
+	path = implementation/clang
+	url = https://github.com/ThePhD/clang.git

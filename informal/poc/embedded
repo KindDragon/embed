@@ -1,0 +1,45 @@
+#include <string_view>
+#include <cstddef>
+
+enum class embedded_source {
+    file = 1,
+    // others added as necessary, values are well-defined by the C++ standard (I doubt it will ever get to that point
+};
+
+struct embedded {
+private:
+    embedded_source m_source;
+    std::size_t m_size;
+    const char* const m_data;
+    
+public:
+    constexpr embedded(const char* const data_, std::size_t size_, embedded_source source_) noexcept : m_source(source_), m_size(size_), m_data(data_) {}
+        
+    constexpr embedded_source source () const noexcept {
+        return m_source;
+    }
+        
+    constexpr const char* const data() const noexcept {
+        return m_data;
+    }
+
+    constexpr std::size_t size() const noexcept {
+        return m_size;
+    }
+    
+    constexpr const char* const begin() const noexcept {
+        return data();
+    }
+    
+    constexpr const char* const end() const noexcept {
+        return data() + size();
+    }
+    
+    constexpr const char* const cbegin() const noexcept {
+        return data();
+    }
+    
+    constexpr const char* const cend() const noexcept {
+        return data() + size();
+    }
+};
