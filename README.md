@@ -57,15 +57,16 @@ The only reason to allow this is because there are many APIs which require this 
 Potential Targets
 =================
 
-Post-Jacksonville Mailing Deadline: April 2nd, 2018
+Pre-Rapperswil Mailing Deadline: May 7th, 2018
 
-Pre-Rapperswil Mailing Deadline: May 6th, 2018
+Rapperswil: June 4th - 9th, 2018
 
 - [x] Contact authors of Prior Art
 - [x] Initial Notes and Ideas
 - [x] Discussion (Slack, Discord, mailing list, C++ user group)
-- [ ] GCC Implementation: April 14th, 2018
-- [ ] Clang Implementation: April 30th, 2018
-- [ ] Submit to LLVM Mailing List (cfe-dev), not for patch review but for suggestions: April 30th, 2018
-- [ ] Submit to GCC Mailing List (gcc) (Seems a bit dead in there: perhaps go to GCC IRC first?): April 14th, 2018
-- [ ] Send out for feedback, ask individuals to use branch: April 14th - May 6th, 2018
+- [ ] Write initial paper for Rapperswil (missing deadline is not an option!): May 7th, 2019
+- [ ] GCC Implementation: May 31st, 2018
+- [ ] Clang Implementation: May 31tst, 2018
+- [ ] Submit to LLVM Mailing List (cfe-dev), not for patch review but for suggestions
+- [ ] Submit to GCC Mailing List (gcc) (Seems a bit dead in there: perhaps go to GCC IRC first?)
+- [ ] Send out for feedback, ask individuals to use branch

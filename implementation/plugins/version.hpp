@@ -64,6 +64,8 @@ Copyright (C) 2018 ThePhD
 This is free software; see the LICENSE for copying conditions. There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.)";
 
+	constexpr const std::string_view plugin_name = "std_embed";
+
 } // namespace embed
 
 #endif // EMBED_VERSION_HPP

@@ -1,0 +1,16 @@
+<pre class='metadata'>
+Title: std::embed
+Shortname: P1040
+Revision: 0
+Audience: EWG, LEWG
+Status: P
+Group: WG21
+URL: 
+!Source: <a href="https://github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs</a>
+Editor: JeanHeyd Meneide
+Abstract: Accessing program-external resources and placing them within the final program
+Date: 2018-05-07
+Markup Shorthands: markdown yes
+</pre>
+
+This paper introduces a function std::embed in the <embed> header.

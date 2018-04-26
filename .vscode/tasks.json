@@ -1,0 +1,17 @@
+{
+	"version": "0.1.0",
+	"tasks": [
+		{
+			"label": "Bikeshed",
+			"type": "shell",
+			"command": "bikeshed",
+			"args": [
+				"spec",
+				"--line-numbers",
+				"${workspaceFolder}/papers/source/embed.bs",
+				"${workspaceFolder}/papers/embed.html",
+			],
+			"problemMatcher": []
+		}
+	]
+}

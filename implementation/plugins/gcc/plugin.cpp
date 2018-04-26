@@ -68,8 +68,11 @@ int plugin_init(struct plugin_name_args* plugin_info, struct plugin_gcc_version*
 		return 1;
 	}
 
-	plugin_info->version = embed::version_string.data();
-	plugin_info->help = embed::help_text.data();
+	struct plugin_info pi;
+	pi.version = embed::version_string.data();
+	pi.help = embed::help_text.data();
+
+	register_callback(embed::plugin_name.data(), PLUGIN_INFO, nullptr, &plugin_info);
 
 	bool help_info_exit = false;
 	embed::command_line_arguments args;
