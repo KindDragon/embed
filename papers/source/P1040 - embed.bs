@@ -8,7 +8,7 @@ Group: WG21
 URL: 
 !Source: <a href="https://github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs</a>
 Editor: JeanHeyd Meneide
-Abstract: Accessing program-external resources and placing them within the final program
+Abstract: Accessing program-external resources and at compile-time and making them available to the developer.
 Date: 2018-05-07
 Markup Shorthands: markdown yes, biblio yes, markup yes
 </pre>
