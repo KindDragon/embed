@@ -1,4 +1,7 @@
 {
+	"[bs]": {
+		"editor.wordWrap": "bounded",
+	},
 	"files.associations": {
 		"algorithm": "cpp",
 		"typeinfo": "cpp",

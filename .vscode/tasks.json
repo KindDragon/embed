@@ -1,17 +1,26 @@
 {
-	"version": "0.1.0",
+	"version": "2.0.0",
 	"tasks": [
 		{
 			"label": "Bikeshed",
 			"type": "shell",
 			"command": "bikeshed",
 			"args": [
+				"--print=plain",
 				"spec",
-				"--line-numbers",
-				"${workspaceFolder}/papers/source/embed.bs",
-				"${workspaceFolder}/papers/embed.html",
+				"${workspaceFolder}/papers/source/P1040 - embed.bs",
+				"${workspaceFolder}/papers/P1040 - embed.html",
 			],
-			"problemMatcher": []
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated"
+			}
 		}
 	]
 }
