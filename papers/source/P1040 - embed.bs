@@ -17,29 +17,29 @@ This paper introduces a function `std::embed` in the `<embed>` header for pullin
 
 # Motivation # {#motivation}
 
-Every C and C++ programmer -- at some point -- attempts to `#include` large chunks of non-C++ data into their code. Of course, `#include` expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Tools such as `xxd -i` have been purposed to help users deal with this. Many developers also hand-wrap their files in (raw) string literals, or similar to massage their data -- binary or not -- into a conforming representation that can be parsed at source code. This very quickly becomes untenable, for many reasons:
+Every C and C++ programmer -- at some point -- attempts to `#include` large chunks of non-C++ source into their code. Of course, `#include` expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Tools such as `xxd -i` have been purposed to help users deal with this. Many developers also hand-wrap their files in (raw) string literals, or similar to massage their data -- binary or not -- into a conforming representation that can be parsed at source code. This very quickly becomes untenable, for many reasons:
 
 1. If the data is updated, a pre-build step needs to be added (or, worse, the programmer commits to manual updates).
     
     a. The tools that generate these source-ready formats are not part of any compiler, and thusly inhibit portability of such code.
     
-    b. Requiring manual updates and tools drastically hurts the ability of many domains (embedding static shader code, large firmware chunks, unchanged image data, et cetera) to use C++ effectively in data-rich/data-driven applications which require many assets to be basked at build-time.
+    b. Requiring manual updates and tools drastically hurts the ability of many domains (embedding static shader code, large firmware chunks, unchanged image data, et cetera) to use C++ effectively in data-rich/data-driven applications which require many assets to be baked at build-time.
     
-    c. It makes C++ even harder to teach and use across-platform for mutliple use cases.
+    c. It makes C++ even harder to teach and use across platforms for multiple use cases.
 
 2. Lexing and Parsing data-as-source-code adds an enormous overhead to actually reading and making that data available.
 
     a. Binary data as C(++) arrays provide the overhead of having to comma-delimit every single byte present, it also requires that the compiler verify every entry in that array is a valid literal or entry according to the C++ parser.
     
-    b. This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (.e.g, firmware and similar).
+    b. This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).
 
 The request for some form of `#include_string` or similar dates back quite a long time, with one of the oldest stack overflow questions asked-and-answered about it dating back nearly 10 years. Predating even that is a plethora of mailing list posts and forum posts asking how to get script code and other things that are not likely to change into the binary.
 
-`<embed>` proposes a new mechanism to solve all of these problems.
+This paper proposes `<embed>` to make this process much more efficient, portable, and streamlined.
 
 # Scope and Impact # {#scope}
 
-`embedded embed( string_view resource_identifier, embed_options options = embed_options::none )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler instrinsics or other suitable mechanisms. It does not affect the language and the header is entirely its own.
+`embedded embed( string_view resource_identifier, embed_options options = embed_options::none )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics or other suitable mechanisms. It does not affect the language and the header is entirely its own.
 
 # Design Decisions # {#design}
 
@@ -55,11 +55,13 @@ Many developers -- if their data is small enough or if it is in some textual rep
 
 Other developers use preprocessors for data that can't be easily hacked into a C++ source-code appropriate state. The most popular one is `xxd -i my_data.bin`, which outputs an array in a file which developers then include. The name of the array is the named after the input file (e.g., `char my_data[] = { ... }`).
 
+Others still use python or other small scripting languages as part of their build process, outputting data in the exact C++ format that they like.
+
 ### `ld`, resource files, and other vendor-specific tools ### {#design.practice.vendor}
 
-Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. However, they come with the cost of losing the ability to perform constant-time inspection and manipulation.
+Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. However, they come with the cost of losing the ability to perform compile-time inspection and manipulation.
 
-For example, one can embed data using `ld -r -b binary -o my_obj.o path/to/data.bin`. It is then your responsibilty to create a source file with, e.g.:
+For example, one can embed data using `ld -r -b binary -o my_obj.o path/to/data.bin`. It is then your responsibility to create a source file with, e.g.:
 
 <xmp highlight="C++">
 extern const unsigned char _binary_data_bin_start[];
@@ -81,11 +83,11 @@ A user could reasonably assign (or want to assign) the resulting array to a `con
 
 ### Literal-Based, Null Terminated (?) ### {#design.prior.null}
 
-It is unclear whether the resulting array of characters or bytes was to be null terminated. The usage and expression implies that it will be, due to its string-like appearance. However, is adding an additional null terminator fitting for desired usage? From the existing tools and practice (e.g., `xxd -i` or linking a data-dumped object file), the answer is no: but the syntax makes the answer seem like a "yes".
+It is unclear whether the resulting array of characters or bytes was to be null terminated. The usage and expression imply that it will be, due to its string-like appearance. However, is adding an additional null terminator fitting for desired usage? From the existing tools and practice (e.g., `xxd -i` or linking a data-dumped object file), the answer is no: but the syntax makes the answer seem like a "yes".
 
 ### Encoding ### {#design.prior.encoding}
 
-Because the proposal used a string literal, several questions came up as to the actual encoding of the returned information. The author gave both `bF"my_file.txt"` and `F"my_file.txt"` to separate binary versus string-based arrays of returns. Not only did this conflate issues with expectations in the previous section, it also became a heavily contested discussion on both the mailing list group discussion of the original proposal and in the paper itself. This is likely one of the biggest pitfalls between separating "binary" data from "string" data: imbuing an object with string-like properties at translation time provide for all of the same hairy questions around source/execution character set and the contents of a literal.
+Because the proposal used a string literal, several questions came up as to the actual encoding of the returned information. The author gave both `bF"my_file.txt"` and `F"my_file.txt"` to separate binary versus string-based arrays of returns. Not only did this conflate issues with expectations in the previous section, it also became a heavily contested discussion on both the mailing list group discussion of the original proposal and in the paper itself. This is likely one of the biggest pitfalls between separating "binary" data from "string" data: imbuing an object with string-like properties at translation time provide for all the same hairy questions around source/execution character set and the contents of a literal.
 
 ## Design Goals ## {#design.goals}
 
@@ -109,7 +111,7 @@ Similar to the above, `std::embed`'s base behavior can be extended using options
 
 ### Constexpr Compatibility ### {#design.goals.constexpr}
 
-The entire implementation must be usable in a `constexpr` context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals in a that are placed into a variable VIA `#include`. These variables can be `constexpr`: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold.
+The entire implementation must be usable in a `constexpr` context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals in a that are placed into a variable via `#include`. These variables can be `constexpr`: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold.
 
 # Help Requested # {#help}
 
@@ -217,7 +219,7 @@ namespace std {
 
 # Acknowledgements # {#acknowledgements}
 
-A big thank you to Andrew Tomazos for replying to my e-mails about the prior art. Thank you to Arthur O'Dwyer for providing me with incredibly insight into the Committee's previous process for how they interpreted the Priot Art.
+A big thank you to Andrew Tomazos for replying to my e-mails about the prior art. Thank you to Arthur O'Dwyer for providing me with incredibly insight into the Committee's previous process for how they interpreted the Prior Art.
 
 A special thank you to Agustín Bergé for encouraging the author to talk to the creator of the Prior Art and getting started on this. Thank you to Tom Honermann for direction and insight on how to write a paper and apply for a proposal. 
 
