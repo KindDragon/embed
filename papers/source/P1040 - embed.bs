@@ -91,15 +91,24 @@ Because the proposal used a string literal, several questions came up as to the 
 
 ## Design Goals ## {#design.goals}
 
-Because of the aforementioned reasons, it seems more prudent to take a "compiler intrinsic"/"magic function" approach. The function takes the form `embedded embed( string_view resource_identifier, embed_options options = embed_options::none )`.
+Because of the aforementioned reasons, it seems more prudent to take a "compiler intrinsic"/"magic function" approach. The function takes the form:
+
+<xmp>
+...
+namespace std {
+	embedded embed( string_view resource_identifier, embed_options options = embed_options::none );
+}
+</xmp>
+
+`resource_identifier` is processed in an implementation-defined manner to pull resources into C++. The most obvious source will be the file system, with the intention of having this evaluated at compile-time.
 
 ### Implementation Defined ### {#design.goals.impldefn}
 
-Calls such as `std::embed( "my_file.txt" );` are meant to be evaluated in a `constexpr` context, where the behavior is implementation-defined. The effect is unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation to provide a failing diagnostic in these cases).
+Calls such as `std::embed( "my_file.txt" );` and `std::embed( "data.dll" );` are meant to be evaluated in a `constexpr` context, where the behavior is implementation-defined. The effect is unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation to provide a failing diagnostic in these cases). This is similar to how include paths work, albeit `#include` interacts with the programmer through the preprocessor. There is, however, precedent for specifying library features that are implemented only through compile-time compiler intrinsics (`type_traits`, `source_location`, and similar utilities).
 
 ### Binary Only ### {#design.goals.binary}
 
-Creating two separate forms or options for loading data that is meant to be a "string" always fuels controversy and debate about what the resulting contents should be. The problem is sidestepped entirely by demanding that the resource loaded by `std::embed` represents the bytes exactly as they come from the resource, modulo any options passed to `std::embed`. This prevents encoding confusion, conversion issues, and other pitfalls related to trying to match the user's idea of "string" data or non-binary formats. Data is received exactly as it is on the machine, whether it is a supposed text file or otherwise.
+Creating two separate forms or options for loading data that is meant to be a "string" always fuels controversy and debate about what the resulting contents should be. The problem is sidestepped entirely by demanding that the resource loaded by `std::embed` represents the bytes exactly as they come from the resource, modulo any options passed to `std::embed`. This prevents encoding confusion, conversion issues, and other pitfalls related to trying to match the user's idea of "string" data or non-binary formats. Data is received exactly as it is on the machine, whether it is a supposed text file or otherwise. `std::embed( "my_text_file.txt" )` and `std::embed( "my_binary_file.bin" )` behave exactly the same as far as their treatment of the resource.
 
 ### Opt-in, Optional Null Termination ### {#design.goals.null}
 
@@ -127,7 +136,7 @@ The author has consulted dozens of C++ users in each of the Text Processing, Vid
 
 There are some open questions about `std::embedded`. `std::embedded` strives to be more like a `view` rather than an owning container, similar to the up and coming [[p0546r2|p0546r2 - Span]].
 
-Should `std::embedded` just be replaced with a fully constexpr `std::span`?
+Should `std::embedded` just be replaced with a fully constexpr `std::span`? It seems like it would be a very good fit, and avoiding "type spam" would help out immensely.
 
 ### Answered Questions ### {#help.bikeshed.answered}
 
@@ -137,7 +146,7 @@ Answer: We fully expect implementations to employ techniques already in use for 
 
 Question: *What is the lookup scheme for files and other resources?*
 
-Answer: Implementation defined. We expect compilers to expose an option similar to `--embed-paths`, `/EMBEDPATH:`, or whatever tickles the implementer's fancy.
+Answer: Implementation defined. We expect compilers to expose an option similar to `--embed-paths=...`, `/EMBEDPATH:...`, or whatever tickles the implementer's fancy.
 
 # Header Overview # {#synopsis}
 
@@ -160,7 +169,7 @@ namespace std {
 } // namespace std
 </xmp>
 
-1. `embed_options` is the enumeration that specifies the type.
+1. `std::embed_options` is the enumeration that specifies additional transformations that the implementation should do to modify the data made available through `std::embedded`.
 
 2. The operators are provided for ease of use to combine and otherwise modify flags, now and into the future.
 
@@ -211,15 +220,23 @@ namespace std {
 } // namespace std
 </xmp>
 
+1. `std::embedded` will provide a view to *contiguous* storage.
+
+2. If the option `std::embed_options::null_terminated` is specified, then the expressions `*v.end()` and `*(v.data() + v.size())` will evaluate to and compare equal to the value `0`.
+
 <xmp>
 namespace std {
-	constexpr embedded embed( std::string_view path, embed_options options = embed_options::none );
+	constexpr embedded embed( std::string_view resource_identifier, embed_options options = embed_options::none );
 } // namespace std
 </xmp>
 
+1. The implementation defines what strings it accepts for `resource_identifier`. [ Note -- It is the hope that compiler vendors will provide a mechanism similar to include paths for finding things on the local filesystem. -- End Note]
+
+2. If this function is called at runtime, then the behavior is unspecified.
+
 # Acknowledgements # {#acknowledgements}
 
-A big thank you to Andrew Tomazos for replying to my e-mails about the prior art. Thank you to Arthur O'Dwyer for providing me with incredibly insight into the Committee's previous process for how they interpreted the Prior Art.
+A big thank you to Andrew Tomazos for replying to the author's e-mails about the prior art. Thank you to Arthur O'Dwyer for providing the author with incredible insight into the Committee's previous process for how they interpreted the Prior Art.
 
 A special thank you to Agustín Bergé for encouraging the author to talk to the creator of the Prior Art and getting started on this. Thank you to Tom Honermann for direction and insight on how to write a paper and apply for a proposal. 
 

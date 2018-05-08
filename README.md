@@ -62,9 +62,10 @@ Rapperswil: June 4th - 9th, 2018
 - [x] Contact authors of Prior Art
 - [x] Initial Notes and Ideas
 - [x] Discussion (Slack, Discord, mailing list, C++ user group)
-- [ ] Write initial paper for Rapperswil (missing deadline is not an option!): May 7th, 2019
+- [x] Write initial paper for Rapperswil (missing deadline is not an option!): May 7th, 2018
 - [ ] GCC Implementation: May 31st, 2018
-- [ ] Clang Implementation: May 31tst, 2018
+- [ ] Clang Implementation: May 31st, 2018
 - [ ] Submit to LLVM Mailing List (cfe-dev), not for patch review but for suggestions
 - [ ] Submit to GCC Mailing List (gcc) (Seems a bit dead in there: perhaps go to GCC IRC first?)
 - [ ] Send out for feedback, ask individuals to use branch
+- [ ] Attend Rapperswil meeting: June 4th - 9th, 2018
