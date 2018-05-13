@@ -15,6 +15,16 @@ Markup Shorthands: markdown yes, biblio yes, markup yes
 
 This paper introduces a function `std::embed` in the `<embed>` header for pulling resources at compile-time into your program and optionally guaranteeing that they are stored in the resulting program in an implementation-defined manner.
 
+# Revision History # {#changelog}
+
+- r1
+
+    Change `std::embed_options::null_terminate` to `std::embed_options::null_terminate`.
+
+- r0
+
+    Initial release.
+
 # Motivation # {#motivation}
 
 Every C and C++ programmer -- at some point -- attempts to `#include` large chunks of non-C++ source into their code. Of course, `#include` expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Tools such as `xxd -i` have been purposed to help users deal with this. Many developers also hand-wrap their files in (raw) string literals, or similar to massage their data -- binary or not -- into a conforming representation that can be parsed at source code. This very quickly becomes untenable, for many reasons:
@@ -112,15 +122,15 @@ Creating two separate forms or options for loading data that is meant to be a "s
 
 ### Opt-in, Optional Null Termination ### {#design.goals.null}
 
-With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of `std::embed_options` is `std::embed_options::null_terminated`. If this option is specified, then the data is null terminated.
+With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of `std::embed_options` is `std::embed_options::null_terminate`. If this option is specified, then the data is null terminated.
 
 ### Options ### {#design.goals.options}
 
-Similar to the above, `std::embed`'s base behavior can be extended using options. This allows for simple needs that come up in the future or that are missed due to oversight to be corrected for. Currently, the only option flag is for `std::embed_options::null_terminated`, but there might be future flags that do things like e.g. force the data to be baked into a specific section of the binary. Having such flags be standardized means that compiler vendors would have to agree about said flags and their specification before shipping: this is *not the place for vendors to place their own implementation-specific flags* (the goal is to reduce fragmentation, not encourage it).
+Similar to the above, `std::embed`'s base behavior can be extended using options. This allows for simple needs that come up in the future or that are missed due to oversight to be corrected for. Currently, the only option flag is for `std::embed_options::null_terminate`, but there might be future flags that do things like e.g. force the data to be baked into a specific section of the binary. Having such flags be standardized means that compiler vendors would have to agree about said flags and their specification before shipping: this is *not the place for vendors to place their own implementation-specific flags* (the goal is to reduce fragmentation, not encourage it).
 
 ### Constexpr Compatibility ### {#design.goals.constexpr}
 
-The entire implementation must be usable in a `constexpr` context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals in a that are placed into a variable via `#include`. These variables can be `constexpr`: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold.
+The entire implementation must be usable in a `constexpr` context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals into a variable via `#include`. These variables can be `constexpr`: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold, and change their expectations.
 
 # Help Requested # {#help}
 
@@ -156,7 +166,7 @@ Answer: Implementation defined. We expect compilers to expose an option similar 
 namespace std {
 	enum class embed_options {
 		none = 0,
-		null_terminated = 1
+		null_terminate = 1
 	};
 
 	// bit-flag manipulations
@@ -181,10 +191,10 @@ namespace std {
 	struct embedded {
 	public:
 		// standard type definitions
-		typedef std::byte&                            reference;
+		typedef const std::byte&                      reference;
 		typedef const std::byte&                      const_reference;
-		typedef const std::byte* const                iterator;
-		typedef const std::byte* const                const_iterator;
+		typedef std::byte const* const                iterator;
+		typedef std::byte const* const                const_iterator;
 		typedef size_t                                size_type;
 		typedef ptrdiff_t                             difference_type;
 		typedef std::byte                             value_type;
@@ -193,7 +203,7 @@ namespace std {
 		
 		// constructors
 		constexpr embedded() noexcept;
-		constexpr embedded(const std::byte* const, std::size_t) noexcept;
+		constexpr embedded(const std::byte* const, size_type) noexcept;
 		constexpr embedded(const embedded&) noexcept = default;
 		constexpr embedded(embedded&&) noexcept = default;
 
@@ -214,15 +224,15 @@ namespace std {
 		constexpr iterator rcend() const noexcept;
 
 		// element access
-		constexpr const std::byte* const data() const noexcept;
-		constexpr const std::byte& operator[](size_type) const noexcept;
+		constexpr reference const data() const noexcept;
+		constexpr const_reference operator[](size_type) const noexcept;
 	};
 } // namespace std
 </xmp>
 
 1. `std::embedded` will provide a view to *contiguous* storage.
 
-2. If the option `std::embed_options::null_terminated` is specified, then the expressions `*v.end()` and `*(v.data() + v.size())` will evaluate to and compare equal to the value `0`.
+2. If the option `std::embed_options::null_terminate` is specified, then the expressions `*v.end()` and `*(v.data() + v.size())` will evaluate to and compare equal to the value `0`.
 
 <xmp>
 namespace std {

@@ -21,6 +21,24 @@
 				"focus": false,
 				"panel": "dedicated"
 			}
+		},
+		{
+			"label": "Bikeshed Auto",
+			"type": "shell",
+			"command": "bikeshed",
+			"args": [
+				"--print=plain",
+				"watch",
+				"${workspaceFolder}/papers/source/P1040 - embed.bs",
+				"${workspaceFolder}/papers/P1040 - embed.html",
+			],
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated"
+			}
 		}
 	]
 }
