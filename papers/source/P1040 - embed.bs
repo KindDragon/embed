@@ -7,9 +7,10 @@ Status: P
 Group: WG21
 URL: 
 !Source: <a href="https://github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs</a>
+!Current: <a href="https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html</a>
 Editor: JeanHeyd Meneide
 Abstract: Accessing program-external resources at compile-time and making them available to the developer.
-Date: 2018-05-07
+Date: 2018-05-16
 Markup Shorthands: markdown yes, biblio yes, markup yes
 </pre>
 
@@ -19,7 +20,7 @@ This paper introduces a function `std::embed` in the `<embed>` header for pullin
 
 - r1
 
-    Change `std::embed_options::null_terminate` to `std::embed_options::null_terminate`.
+    Change `std::embed_options::null_terminated` to `std::embed_options::null_terminate`.
 
 - r0
 

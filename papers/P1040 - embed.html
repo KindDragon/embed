@@ -1192,7 +1192,7 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 6248c77951c39097e395664a9abb545dc9a4951d" name="generator">
-  <meta content="f7e2a888b45de600df14a858a3fb98ef65e36da1" name="document-revision">
+  <meta content="9b86aa49fa4d9a9fab977e0c5d47ad485887af3a" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1402,7 +1402,7 @@ pre .property::before, pre .property::after {
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">p1040R0<br>std::embed</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2018-05-07">7 May 2018</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2018-05-16">16 May 2018</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Author:
@@ -1414,6 +1414,8 @@ pre .property::before, pre .property::after {
      <dd>ISO JTC1/SC22/WG21: Programming Language C++
      <dt>Source:
      <dd><a href="https://github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs</a>
+     <dt>Current:
+     <dd><a href="https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html</a>
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -1480,11 +1482,11 @@ pre .property::before, pre .property::after {
    <h2 class="heading settled" data-level="1" id="changelog"><span class="secno">1. </span><span class="content">Revision History</span><a class="self-link" href="#changelog"></a></h2>
    <ul>
     <li data-md="">
-     <p>r1
-Change <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminated</span></code> to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>.</p>
+     <p>r1</p>
+     <p>Change <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code> to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>.</p>
     <li data-md="">
-     <p>r0
-Initial release.</p>
+     <p>r0</p>
+     <p>Initial release.</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p>Every C and C++ programmer -- at some point -- attempts to <code class="highlight"><span class="cp">#include</span></code> large chunks of non-C++ source into their code. Of course, <code class="highlight"><span class="cp">#include</span></code> expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Tools such as <code class="highlight"><span class="n">xxd</span> <span class="o">-</span><span class="n">i</span></code> have been purposed to help users deal with this. Many developers also hand-wrap their files in (raw) string literals, or similar to massage their data -- binary or not -- into a conforming representation that can be parsed at source code. This very quickly becomes untenable, for many reasons:</p>
@@ -1545,7 +1547,7 @@ Initial release.</p>
    <h4 class="heading settled" data-level="4.3.4" id="design.goals.options"><span class="secno">4.3.4. </span><span class="content">Options</span><a class="self-link" href="#design.goals.options"></a></h4>
    <p>Similar to the above, <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code>'s base behavior can be extended using options. This allows for simple needs that come up in the future or that are missed due to oversight to be corrected for. Currently, the only option flag is for <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>, but there might be future flags that do things like e.g. force the data to be baked into a specific section of the binary. Having such flags be standardized means that compiler vendors would have to agree about said flags and their specification before shipping: this is <em>not the place for vendors to place their own implementation-specific flags</em> (the goal is to reduce fragmentation, not encourage it).</p>
    <h4 class="heading settled" data-level="4.3.5" id="design.goals.constexpr"><span class="secno">4.3.5. </span><span class="content">Constexpr Compatibility</span><a class="self-link" href="#design.goals.constexpr"></a></h4>
-   <p>The entire implementation must be usable in a <code class="highlight"><span class="k">constexpr</span></code> context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals in a that are placed into a variable via <code class="highlight"><span class="cp">#include</span></code>. These variables can be <code class="highlight"><span class="k">constexpr</span></code>: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold.</p>
+   <p>The entire implementation must be usable in a <code class="highlight"><span class="k">constexpr</span></code> context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals into a variable via <code class="highlight"><span class="cp">#include</span></code>. These variables can be <code class="highlight"><span class="k">constexpr</span></code>: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold, and change their expectations.</p>
    <h2 class="heading settled" data-level="5" id="help"><span class="secno">5. </span><span class="content">Help Requested</span><a class="self-link" href="#help"></a></h2>
    <p>The author of this proposal is extremely new to writing standardese. While the author has read other papers and consumed the standard, there is a definite need for help and any guidance and direction is certainly welcome. The author expects that this paper may undergo several revisions and undertake quite a few moments of "bikeshedding".</p>
    <h3 class="heading settled" data-level="5.1" id="help.represent"><span class="secno">5.1. </span><span class="content">Feeling Underrepresented?</span><a class="self-link" href="#help.represent"></a></h3>
@@ -1564,7 +1566,7 @@ Initial release.</p>
 <pre class="highlight"><span class="k">namespace</span> <span class="n">std</span> <span class="p">{</span>
   <span class="k">enum</span> <span class="k">class</span> <span class="nc">embed_options</span> <span class="p">{</span>
     <span class="n">none</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">null_terminated</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">null_terminate</span> <span class="o">=</span> <span class="mi">1</span>
   <span class="p">};</span>
 
   <span class="c1">// bit-flag manipulations</span>
@@ -1589,10 +1591,10 @@ Initial release.</p>
   <span class="k">struct</span> <span class="n">embedded</span> <span class="p">{</span>
   <span class="k">public</span><span class="o">:</span>
     <span class="c1">// standard type definitions</span>
-<span class="c1"></span>    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">&amp;</span>                            <span class="n">reference</span><span class="p">;</span>
+<span class="c1"></span>    <span class="k">typedef</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">&amp;</span>                      <span class="n">reference</span><span class="p">;</span>
     <span class="k">typedef</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">&amp;</span>                      <span class="n">const_reference</span><span class="p">;</span>
-    <span class="k">typedef</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">*</span> <span class="k">const</span>                <span class="n">iterator</span><span class="p">;</span>
-    <span class="k">typedef</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">*</span> <span class="k">const</span>                <span class="n">const_iterator</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span> <span class="k">const</span><span class="o">*</span> <span class="k">const</span>                <span class="n">iterator</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span> <span class="k">const</span><span class="o">*</span> <span class="k">const</span>                <span class="n">const_iterator</span><span class="p">;</span>
     <span class="k">typedef</span> <span class="kt">size_t</span>                                <span class="n">size_type</span><span class="p">;</span>
     <span class="k">typedef</span> <span class="kt">ptrdiff_t</span>                             <span class="n">difference_type</span><span class="p">;</span>
     <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span>                             <span class="n">value_type</span><span class="p">;</span>
@@ -1601,7 +1603,7 @@ Initial release.</p>
 		
     <span class="c1">// constructors</span>
 <span class="c1"></span>    <span class="k">constexpr</span> <span class="nf">embedded</span><span class="p">()</span> <span class="k">noexcept</span><span class="p">;</span>
-    <span class="k">constexpr</span> <span class="nf">embedded</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">*</span> <span class="k">const</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+    <span class="k">constexpr</span> <span class="nf">embedded</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">*</span> <span class="k">const</span><span class="p">,</span> <span class="n">size_type</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
     <span class="k">constexpr</span> <span class="nf">embedded</span><span class="p">(</span><span class="k">const</span> <span class="n">embedded</span><span class="o">&amp;</span><span class="p">)</span> <span class="k">noexcept</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
     <span class="k">constexpr</span> <span class="nf">embedded</span><span class="p">(</span><span class="n">embedded</span><span class="o">&amp;&amp;</span><span class="p">)</span> <span class="k">noexcept</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
 
@@ -1622,8 +1624,8 @@ Initial release.</p>
     <span class="k">constexpr</span> <span class="n">iterator</span> <span class="nf">rcend</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
 
     <span class="c1">// element access</span>
-<span class="c1"></span>    <span class="k">constexpr</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">*</span> <span class="k">const</span> <span class="n">data</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
-    <span class="k">constexpr</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">&amp;</span> <span class="k">operator</span><span class="p">[](</span><span class="n">size_type</span><span class="p">)</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+<span class="c1"></span>    <span class="k">constexpr</span> <span class="n">reference</span> <span class="k">const</span> <span class="nf">data</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+    <span class="k">constexpr</span> <span class="n">const_reference</span> <span class="k">operator</span><span class="p">[](</span><span class="n">size_type</span><span class="p">)</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
   <span class="p">};</span>
 <span class="p">}</span> <span class="c1">// namespace std</span>
 </pre>
@@ -1631,7 +1633,7 @@ Initial release.</p>
     <li data-md="">
      <p><code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embedded</span></code> will provide a view to <em>contiguous</em> storage.</p>
     <li data-md="">
-     <p>If the option <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminated</span></code> is specified, then the expressions <code class="highlight"><span class="o">*</span><span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">()</span></code> and <code class="highlight"><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">data</span><span class="p">()</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">())</span></code> will evaluate to and compare equal to the value <code class="highlight"><span class="mi">0</span></code>.</p>
+     <p>If the option <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code> is specified, then the expressions <code class="highlight"><span class="o">*</span><span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">()</span></code> and <code class="highlight"><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">data</span><span class="p">()</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">())</span></code> will evaluate to and compare equal to the value <code class="highlight"><span class="mi">0</span></code>.</p>
    </ol>
 <pre class="highlight"><span class="k">namespace</span> <span class="n">std</span> <span class="p">{</span>
   <span class="k">constexpr</span> <span class="n">embedded</span> <span class="n">embed</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">resource_identifier</span><span class="p">,</span> <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span> <span class="p">);</span>
