@@ -253,7 +253,7 @@ constexpr span<byte> embed(
 );
 </xmp>
 
-`resource_identifier` is processed in an implementation-defined manner to pull resources into C++. The most obvious source will be the file system, with the intention of having this evaluated at compile-time. We do not attempt to restrict the `string_view` to
+`resource_identifier` is processed in an implementation-defined manner to pull resources into C++. The most obvious source will be the file system, with the intention of having this evaluated at compile-time. We do not attempt to restrict the `string_view` to a specific subset: whatever the implementation accepts (expected to be a file path), the implementation should use.
 
 ### Implementation Defined ### {#design-goals-impldefn}
 
