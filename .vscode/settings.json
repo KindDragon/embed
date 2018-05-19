@@ -73,6 +73,13 @@
 		"exception": "cpp",
 		"initializer_list": "cpp",
 		"new": "cpp",
-		"embed": "cpp"
-	}
+		"embed": "cpp",
+		"cstdlib": "cpp",
+		"xstring": "cpp"
+	},
+	"spellright.language": "en",
+	"spellright.documentTypes": [
+		"markdown",
+		"latex"
+	]
 }

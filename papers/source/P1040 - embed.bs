@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: std::embed
 Shortname: P1040
-Revision: 0
+Revision: r1-beta
 Audience: EWG, LEWG, SG15
 Status: P
 Group: WG21
@@ -14,13 +14,15 @@ Date: 2018-05-16
 Markup Shorthands: markdown yes, biblio yes, markup yes
 </pre>
 
-This paper introduces a function `std::embed` in the `<embed>` header for pulling resources at compile-time into your program and optionally guaranteeing that they are stored in the resulting program in an implementation-defined manner.
+This paper introduces a function `std::embed` in the `<embed>` header for pulling resources at compile-time into a program and optionally guaranteeing that they are stored in the resulting program in an implementation-defined manner.
 
 # Revision History # {#changelog}
 
 - r1
 
-    Change `std::embed_options::null_terminated` to `std::embed_options::null_terminate`.
+	Change `std::embed_options::null_terminated` to `std::embed_options::null_terminate`.
+    
+	Add more code demonstrating the old way and motivating examples.
 
 - r0
 
@@ -28,108 +30,259 @@ This paper introduces a function `std::embed` in the `<embed>` header for pullin
 
 # Motivation # {#motivation}
 
-Every C and C++ programmer -- at some point -- attempts to `#include` large chunks of non-C++ source into their code. Of course, `#include` expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Tools such as `xxd -i` have been purposed to help users deal with this. Many developers also hand-wrap their files in (raw) string literals, or similar to massage their data -- binary or not -- into a conforming representation that can be parsed at source code. This very quickly becomes untenable, for many reasons:
+Every C and C++ programmer -- at some point -- attempts to `#include` large chunks of non-C++ data into their code. Of course, `#include` expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Thusly, many different tools and practices were adapted to handle this, as far back as 1995 with the `xxd` tool. Many industries need such functionality, including (but hardly limited to):
 
-1. If the data is updated, a pre-build step needs to be added (or, worse, the programmer commits to manual updates).
-    
-    a. The tools that generate these source-ready formats are not part of any compiler, and thusly inhibit portability of such code.
-    
-    b. Requiring manual updates and tools drastically hurts the ability of many domains (embedding static shader code, large firmware chunks, unchanged image data, et cetera) to use C++ effectively in data-rich/data-driven applications which require many assets to be baked at build-time.
-    
-    c. It makes C++ even harder to teach and use across platforms for multiple use cases.
+- Financial Development (representing coefficients for ahead-of-time algorithms as data pushed-in at build time)
+- Game Development (assets that do not change at runtime, including Shader code, icons, and fixed textures)
+- Embedded Development (storing large chunks of binary, such as firmware)
+- Application Development (compressed binary blobs representing data and non-C++ script code that is not changed at runtime), and
+- Server Development (configuration parameters which are known at build-time and are baked in to set limits and give compile-time information to tweak performance under certain loads).
 
-2. Lexing and Parsing data-as-source-code adds an enormous overhead to actually reading and making that data available.
-
-    a. Binary data as C(++) arrays provide the overhead of having to comma-delimit every single byte present, it also requires that the compiler verify every entry in that array is a valid literal or entry according to the C++ parser.
-    
-    b. This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).
+In the pursuit of this goal, these tools have proven to have inadequacies and contribute poorly to the C++ development cycle as it continues to scale up for larger and better low-end devices and high-performance machines, bogging developers down with menial build tasks and trying to cover-up disappointing differences between platforms.
 
 The request for some form of `#include_string` or similar dates back quite a long time, with one of the oldest stack overflow questions asked-and-answered about it dating back nearly 10 years. Predating even that is a plethora of mailing list posts and forum posts asking how to get script code and other things that are not likely to change into the binary.
 
-This paper proposes `<embed>` to make this process much more efficient, portable, and streamlined.
+This paper proposes `<embed>` to make this process much more efficient, portable, and streamlined. Here's an example of the ideal:
+
+<xmp highlight="C++">
+#include <embed>
+
+int main (int, char*[]) {
+	constexpr std::span<std::byte> fxaa_binary = std::embed("fxaa.spirv");
+	
+	// assert this is a SPIRV file, compile-time	
+	static_assert(fxaa_binary[0] == 0x03 && fxaa_binary[1] == 0x02
+		&& fxaa_binary[2] == 0x23 && fxaa_binary[3] == 0x07, "given wrong SPIRV data, check rebuild or check the binaries!")
+
+	auto context = make_vulkan_context();
+
+	// data kept around and made available for binary
+	// to use at runtime
+	auto fxaa_shader = make_shader(context, fxaa_binary);
+
+	for (;;) {
+		// ...
+		// and we're off!
+		// ...
+	}
+
+	return 0;
+}
+</xmp>
 
 # Scope and Impact # {#scope}
 
-`embedded embed( string_view resource_identifier, embed_options options = embed_options::none )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics or other suitable mechanisms. It does not affect the language and the header is entirely its own.
+`constexpr span<byte> embed( string_view resource_identifier, embed_options options = embed_options::none )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is `<embed>`, making the feature entirely-opt-in and preprocessor-testable using `__has_include( <embed> )`.
 
 # Design Decisions # {#design}
 
-`<embed>` avoids using the preprocessor or defining new string syntax, preferring the use of a free function in the `std` namespace and some associated utility flags and structures. `<embed>`'s design is derived heavily from community feedback plus the rejection of the prior art up to this point, as well as the community needs demonstrated by existing practice and their pit falls.
+`<embed>` avoids using the preprocessor or defining new string literal syntax like its predecessors, preferring the use of a free function in the `std` namespace and some associated utility flags. `<embed>`'s design is derived heavily from community feedback plus the rejection of the prior art up to this point, as well as the community needs demonstrated by existing practice and their pit falls.
 
-## Current Practice ## {#design.practice}
+## Current Practice ## {#design-practice}
 
-There are a few cross-platform (and not-so-cross-platform) paths for getting data into your executable.
+Here, we examine current practice, their benefits, and their pitfalls. There are a few cross-platform (and not-so-cross-platform) paths for getting data into an executable.
 
-### Pre-processors and Massages ### {#design.practice.massage}
+### Manual Work ### {#design-practice-manual}
 
-Many developers -- if their data is small enough or if it is in some textual representation -- forego things like proper syntax highlight and tool help by prepending and appending (raw) string literal syntax to their files. This happens often in the case of people who have not yet taken the "add a build step" mantra to heart.
+Many developers also hand-wrap their files in (raw) string literals, or similar to massage their data -- binary or not -- into a conforming representation that can be parsed at source code:
 
-Other developers use preprocessors for data that can't be easily hacked into a C++ source-code appropriate state. The most popular one is `xxd -i my_data.bin`, which outputs an array in a file which developers then include. The name of the array is the named after the input file (e.g., `char my_data[] = { ... }`).
+0. Have a file `data.json` with some data, for example:
 
-Others still use python or other small scripting languages as part of their build process, outputting data in the exact C++ format that they like.
+<xmp>{ "Hello": "World!" }</xmp>
 
-### `ld`, resource files, and other vendor-specific tools ### {#design.practice.vendor}
+1. Mangle that file with raw string literals, and save it as `raw_include_data.h`:
 
-Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. However, they come with the cost of losing the ability to perform compile-time inspection and manipulation.
+<xmp>R"json({ "Hello": "World!" })json"</xmp>
 
-For example, one can embed data using `ld -r -b binary -o my_obj.o path/to/data.bin`. It is then your responsibility to create a source file with, e.g.:
+2. Include it into a variable, optionally made `constexpr`, and use it in the program:
 
-<xmp highlight="C++">
-extern const unsigned char _binary_data_bin_start[];
-extern const unsigned char _binary_data_bin_end[];
-size_t const size = _binary_data_bin_end - _binary_data_bin_start;
+<xmp>
+#include <iostream>
+#include <string_view>
+
+int main() {
+	constexpr std::string_view json_view =
+#include "raw_include_data.h"
+		;
+		
+	// { "Hello": "World!" }
+	std::cout << json_view << std::endl;
+	return 0;
+}
+
 </xmp>
 
-(Thank you to Arvid Gerstmann for demonstrating the snippet).
+This happens often in the case of people who have not yet taken the "add a build step" mantra to heart. The biggest problem is that the above C++-ready source file is no longer valid in as its original representation, meaning the file as-is cannot be passed to any validation tools, schema checkers, or otherwise. This hurts the portability and interop story of C++ with other tools and languages.
 
-Because these declarations are `extern`, the values in the array cannot be accessed at compilation/translation-time. While this is not a problem for some, it is for others and -- of course -- all of these techniques are compiler and vendor specific.
+Furthermore, if the string literal is too big vendors such [[nonius-visual-c-error|as VC++ will hard-error the build]].
 
-## Prior Art ## {#design.prior}
+### Processing Tools ### {#design-practice-tools}
+
+Other developers use pre-processors for data that can't be easily hacked into a C++ source-code appropriate state (e.g., binary). The most popular one is `xxd -i my_data.bin`, which outputs an array in a file which developers then include. The name of the array is the named after the input file. An example:
+
+1. Run the tool over the data (`xxd -i xxd_data.bin > xxd_data.h`) to obtain the generated file (`xxd_data.h`):
+
+<xmp highlight="C++">
+unsigned char xxd_data_bin[] = {
+  0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64,
+  0x0a
+};
+unsigned int xxd_data_bin_len = 13;
+</xmp>
+
+2. Compile `main.cpp`:
+
+<xmp highlight="C++">
+#include <iostream>
+#include <string_view>
+
+// prefix as constexpr
+constexpr
+#include "xxd_data.h"
+;
+
+template <typename T, std::size_t N>
+constexpr std::size_t array_size(const T (&)\[N]) {
+    return N;
+}
+
+int main() {
+    static_assert(xxd_data_bin[0] == 'H');
+    static_assert(array_size(xxd_data_bin) == 13);
+
+    std::string_view data_view(
+        reinterpret_cast<const char*>(xxd_data_bin),
+        array_size(xxd_data_bin));
+    std::cout << data_view << std::endl; // Hello, World!
+    return 0;
+}
+</xmp>
+
+Others still use python or other small scripting languages as part of their build process, outputting data in the exact C++ format that they require.
+
+There are problems with the `xxd -i` or similar tool-based approach. Lexing and Parsing data-as-source-code adds an enormous overhead to actually reading and making that data available.
+
+Binary data as C(++) arrays provide the overhead of having to comma-delimit every single byte present, it also requires that the compiler verify every entry in that array is a valid literal or entry according to the C++ language.
+
+This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).
+
+### `ld`, resource files, and other vendor-specific tools ### {#design-practice-vendor}
+
+Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. An full, compilable example (except on Visual C++):
+
+0. Have a file ld_data.bin with the contents `Hello, World!`.
+
+1. Run `ld -r binary -o ld_data.o ld_data.bin`.
+
+2. Compile the following `main.cpp` with `c++ -std=c++17 ld_data.o main.cpp`:
+
+<xmp highlight="C++">
+#include <iostream>
+#include <string_view>
+
+#ifdef __APPLE__
+#include <mach-o/getsect.h>
+
+#define DECLARE_LD(NAME) extern const unsigned char _section$__DATA__##NAME[];
+#define LD_NAME(NAME) _section$__DATA__##NAME
+#define LD_SIZE(NAME) (getsectbyname("__DATA", "__" #NAME)->size)
+
+#elif (defined __MINGW32__) /* mingw */
+
+#define DECLARE_LD(NAME)                                 \
+	extern const unsigned char binary_##NAME##_start[]; \
+	extern const unsigned char binary_##NAME##_end[];
+#define LD_NAME(NAME) binary_##NAME##_start
+#define LD_SIZE(NAME) ((binary_##NAME##_end) - (binary_##NAME##_start))
+
+#else /* gnu/linux ld */
+
+#define DECLARE_LD(NAME)                                  \
+	extern const unsigned char _binary_##NAME##_start[]; \
+	extern const unsigned char _binary_##NAME##_end[];
+#define LD_NAME(NAME) _binary_##NAME##_start
+#define LD_SIZE(NAME) ((_binary_##NAME##_end) - (_binary_##NAME##_start))
+#endif
+
+DECLARE_LD(ld_data_bin);
+
+int main() {
+	// impossible
+	//static_assert(xxd_data_bin[0] == 'H');
+	std::string_view data_view(
+		reinterpret_cast<const char*>(LD_NAME(ld_data_bin)), 
+		LD_SIZE(ld_data_bin)
+	);
+	std::cout << data_view << std::endl; // Hello, World!
+	return 0;
+}
+</xmp>
+
+This scales a little bit better in terms of raw compilation time but is shockingly OS, vendor and platform specific in ways that novice developers would be able to handle fully. The macros are required to erase differences, lest subtle differences in name will destroy one's ability to use these macros effectively. We ommitted the code for handling VC++ resource files because it is excessively verbose than what is present here.
+
+N.B.: Because these declarations are `extern`, the values in the array cannot be accessed at compilation/translation-time. 
+
+## Prior Art ## {#design-prior}
 
 There has been a lot of discussion over the years in many arenas, from Stack Overflow to mailing lists to meetings with the Committee itself. The latest advancements that had been brought to WG21's attention was [[p0373r0 | p0373r0 - File String Literals]]. It proposed the syntax `F"my_file.txt"` and `bF"my_file.txt"`, with a few other amenities, to load files at compilation time. The following is an analysis of the previous proposal.
 
-### Literal-Based, constexpr ### {#design.prior.literal}
+### Literal-Based, constexpr ### {#design-prior-literal}
 
 A user could reasonably assign (or want to assign) the resulting array to a `constexpr` variable as its expected to be handled like most other string literals. This allowed some degree of compile-time reflection. It is entirely helpful that such file contents be assigned to constexpr: e.g., string literals of JSON being loaded at compile time to be parsed by Ben Deane and Jason Turner in their CppCon 2017 talk, [[constexpr-all-the-things|constexpr All The Things]].
 
-### Literal-Based, Null Terminated (?) ### {#design.prior.null}
+### Literal-Based, Null Terminated (?) ### {#design-prior-null}
 
-It is unclear whether the resulting array of characters or bytes was to be null terminated. The usage and expression imply that it will be, due to its string-like appearance. However, is adding an additional null terminator fitting for desired usage? From the existing tools and practice (e.g., `xxd -i` or linking a data-dumped object file), the answer is no: but the syntax makes the answer seem like a "yes".
+It is unclear whether the resulting array of characters or bytes was to be null terminated. The usage and expression imply that it will be, due to its string-like appearance. However, is adding an additional null terminator fitting for desired usage? From the existing tools and practice (e.g., `xxd -i` or linking a data-dumped object file), the answer is no: but the syntax `bF"hello.txt"` makes the answer seem like a "yes". This is confusing: the user should be given an explicit choice.
 
-### Encoding ### {#design.prior.encoding}
+### Encoding ### {#design-prior-encoding}
 
 Because the proposal used a string literal, several questions came up as to the actual encoding of the returned information. The author gave both `bF"my_file.txt"` and `F"my_file.txt"` to separate binary versus string-based arrays of returns. Not only did this conflate issues with expectations in the previous section, it also became a heavily contested discussion on both the mailing list group discussion of the original proposal and in the paper itself. This is likely one of the biggest pitfalls between separating "binary" data from "string" data: imbuing an object with string-like properties at translation time provide for all the same hairy questions around source/execution character set and the contents of a literal.
 
-## Design Goals ## {#design.goals}
+## Design Goals ## {#design-goals}
 
 Because of the aforementioned reasons, it seems more prudent to take a "compiler intrinsic"/"magic function" approach. The function takes the form:
 
 <xmp>
-...
-namespace std {
-	embedded embed( string_view resource_identifier, embed_options options = embed_options::none );
+constexpr span<byte> embed( 
+	string_view resource_identifier, 
+	embed_options options = embed_options::none
+);
+</xmp>
+
+`resource_identifier` is processed in an implementation-defined manner to pull resources into C++. The most obvious source will be the file system, with the intention of having this evaluated at compile-time. We do not attempt to restrict the `string_view` to
+
+### Implementation Defined ### {#design-goals-impldefn}
+
+Calls such as `std::embed( "my_file.txt" );` and `std::embed( "data.dll" );` are meant to be evaluated in a `constexpr` context, where the behavior is implementation-defined. The function has unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation to provide a failing diagnostic in these cases). This is similar to how include paths work, albeit `#include` interacts with the programmer through the preprocessor. There is, however, precedent for specifying library features that are implemented only through compile-time compiler intrinsics (`type_traits`, `source_location`, and similar utilities).
+
+Core -- for other proposals such as [[p0466r1|p0466r1 - Layout-compatibility and Pointer-interconvertibility Traits ]] -- indicated their preference in using a `constexpr` magic function implemented by intrinsic in the standard library over some form of `template <auto X> thing { /* implementation specified */ value; };` construct. However, it is important to note that [[p0466r1]] proposes type traits, where as this has entirely different functionality, and so its reception and opinions may be different.
+
+As `std::embed` is meant to exist at compile-time only, it may be prudent to rely on [[p1073r0|p1073r0 - constexpr! functions]]. However, these are only design decisions to more clearly express the intent of the paper. This paper does not explicitly rely on [[p1073r0]].
+
+### Binary Only ### {#design-goals-binary}
+
+Creating two separate forms or options for loading data that is meant to be a "string" always fuels controversy and debate about what the resulting contents should be. The problem is sidestepped entirely by demanding that the resource loaded by `std::embed` represents the bytes exactly as they come from the resource, modulo any options passed to `std::embed`. This prevents encoding confusion, conversion issues, and other pitfalls related to trying to match the user's idea of "string" data or non-binary formats. Data is received exactly as it is on the machine, whether it is a supposed text file or otherwise. `std::embed( "my_text_file.txt" )` and `std::embed( "my_binary_file.bin" )` behave exactly the same concerning their treatment of the resource.
+
+### Opt-in, Optional Null Termination ### {#design-goals-null}
+
+With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of `std::embed_options` is `std::embed_options::null_terminate`. If this option is specified, then the data is null terminated:
+
+<xmp>
+#include <embed>
+
+int main () {
+	constexpr auto data = std::embed("my_file.txt", std::embed_options::null_terminate);
+	static_assert(data[data.size()] == '\0');
+	// use as desired, potentially with system calls and graphics APIs...
+	return 0;
 }
 </xmp>
 
-`resource_identifier` is processed in an implementation-defined manner to pull resources into C++. The most obvious source will be the file system, with the intention of having this evaluated at compile-time.
-
-### Implementation Defined ### {#design.goals.impldefn}
-
-Calls such as `std::embed( "my_file.txt" );` and `std::embed( "data.dll" );` are meant to be evaluated in a `constexpr` context, where the behavior is implementation-defined. The effect is unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation to provide a failing diagnostic in these cases). This is similar to how include paths work, albeit `#include` interacts with the programmer through the preprocessor. There is, however, precedent for specifying library features that are implemented only through compile-time compiler intrinsics (`type_traits`, `source_location`, and similar utilities).
-
-### Binary Only ### {#design.goals.binary}
-
-Creating two separate forms or options for loading data that is meant to be a "string" always fuels controversy and debate about what the resulting contents should be. The problem is sidestepped entirely by demanding that the resource loaded by `std::embed` represents the bytes exactly as they come from the resource, modulo any options passed to `std::embed`. This prevents encoding confusion, conversion issues, and other pitfalls related to trying to match the user's idea of "string" data or non-binary formats. Data is received exactly as it is on the machine, whether it is a supposed text file or otherwise. `std::embed( "my_text_file.txt" )` and `std::embed( "my_binary_file.bin" )` behave exactly the same as far as their treatment of the resource.
-
-### Opt-in, Optional Null Termination ### {#design.goals.null}
-
-With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of `std::embed_options` is `std::embed_options::null_terminate`. If this option is specified, then the data is null terminated.
-
-### Options ### {#design.goals.options}
+### Options ### {#design-goals-options}
 
 Similar to the above, `std::embed`'s base behavior can be extended using options. This allows for simple needs that come up in the future or that are missed due to oversight to be corrected for. Currently, the only option flag is for `std::embed_options::null_terminate`, but there might be future flags that do things like e.g. force the data to be baked into a specific section of the binary. Having such flags be standardized means that compiler vendors would have to agree about said flags and their specification before shipping: this is *not the place for vendors to place their own implementation-specific flags* (the goal is to reduce fragmentation, not encourage it).
 
-### Constexpr Compatibility ### {#design.goals.constexpr}
+### Constexpr Compatibility ### {#design-goals-constexpr}
 
 The entire implementation must be usable in a `constexpr` context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals into a variable via `#include`. These variables can be `constexpr`: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold, and change their expectations.
 
@@ -137,27 +290,31 @@ The entire implementation must be usable in a `constexpr` context. It is not jus
 
 The author of this proposal is extremely new to writing standardese. While the author has read other papers and consumed the standard, there is a definite need for help and any guidance and direction is certainly welcome. The author expects that this paper may undergo several revisions and undertake quite a few moments of "bikeshedding".
 
-## Feeling Underrepresented? ## {#help.represent}
+## Feeling Underrepresented? ## {#help-represent}
 
-The author has consulted dozens of C++ users in each of the Text Processing, Video Game, Financial, Embedded and Desktop Application development subspaces. The author has also queried the opinions of Academia. The author feels this paper adequately covers many use cases, existing practice and prior art. If there is a use case or a problem not being adequately addressed by this proposal, the author encourages anyone and everyone to reach out to have their voice heard.
+The author has consulted dozens of C++ users in each of the Text Processing, Video Game, Financial, Server, Embedded and Desktop Application development subspaces. The author has also queried the opinions of Academia. The author feels this paper adequately covers many use cases, existing practice and prior art. If there is a use case or a problem not being adequately addressed by this proposal, the author encourages anyone and everyone to reach out to have their voice heard.
 
-## Bikeshedding ## {#help.bikshed}
+## Bikeshedding ## {#help-bikshed}
 
-### Open Questions ### {#help.bikeshed.open}
+### Open Questions ### {#help-bikeshed-open}
 
-There are some open questions about `std::embedded`. `std::embedded` strives to be more like a `view` rather than an owning container, similar to the up and coming [[p0546r2|p0546r2 - Span]].
+1. Is a magic library function in a header the most desirable? Other proposals have fallen flat, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.
 
-Should `std::embedded` just be replaced with a fully constexpr `std::span`? It seems like it would be a very good fit, and avoiding "type spam" would help out immensely.
+2. Should the return `std::span` be const-qualified, as in `std::span<const std::byte>`?
 
-### Answered Questions ### {#help.bikeshed.answered}
+### Answered Questions ### {#help-bikeshed-answered}
 
-Question: *Pulling in large source files on every compile might be expensive?*
+Question: Should `std::embedded` just be replaced with `std::span`?
 
-Answer: We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a problem.
+Answer: Yes. `std::span` covers all of the use cases here, is `constexpr`, and makes the most sense.
 
 Question: *What is the lookup scheme for files and other resources?*
 
 Answer: Implementation defined. We expect compilers to expose an option similar to `--embed-paths=...`, `/EMBEDPATH:...`, or whatever tickles the implementer's fancy.
+
+Question: *Pulling in large data files on every compile might be expensive?*
+
+Answer: We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a frequent problem past the first compilation.
 
 # Header Overview # {#synopsis}
 
@@ -186,58 +343,14 @@ namespace std {
 
 <xmp>
 #include <string_view> // for std::string_view
+#include <span> // for std::span
 #include <cstddef> // for std::byte, std::size_t, std::ptrdiff_t...
 
 namespace std {
-	struct embedded {
-	public:
-		// standard type definitions
-		typedef const std::byte&                      reference;
-		typedef const std::byte&                      const_reference;
-		typedef std::byte const* const                iterator;
-		typedef std::byte const* const                const_iterator;
-		typedef size_t                                size_type;
-		typedef ptrdiff_t                             difference_type;
-		typedef std::byte                             value_type;
-		typedef std::reverse_iterator<iterator>       reverse_iterator;
-		typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-		
-		// constructors
-		constexpr embedded() noexcept;
-		constexpr embedded(const std::byte* const, size_type) noexcept;
-		constexpr embedded(const embedded&) noexcept = default;
-		constexpr embedded(embedded&&) noexcept = default;
-
-		// capacity requirements
-		constexpr size_type size() const noexcept;
-		constexpr size_type capacity() const noexcept;
-		constexpr bool empty() const noexcept;
-
-		// iterator requirements
-		constexpr iterator begin() const noexcept;
-		constexpr iterator end() const noexcept;
-		constexpr iterator cbegin() const noexcept;
-		constexpr iterator cend() const noexcept;
-
-		constexpr iterator rbegin() const noexcept;
-		constexpr iterator rend() const noexcept;
-		constexpr iterator rcbegin() const noexcept;
-		constexpr iterator rcend() const noexcept;
-
-		// element access
-		constexpr reference const data() const noexcept;
-		constexpr const_reference operator[](size_type) const noexcept;
-	};
-} // namespace std
-</xmp>
-
-1. `std::embedded` will provide a view to *contiguous* storage.
-
-2. If the option `std::embed_options::null_terminate` is specified, then the expressions `*v.end()` and `*(v.data() + v.size())` will evaluate to and compare equal to the value `0`.
-
-<xmp>
-namespace std {
-	constexpr embedded embed( std::string_view resource_identifier, embed_options options = embed_options::none );
+	constexpr span<std::byte> embed( 
+		string_view resource_identifier, 
+		embed_options options = embed_options::none 
+	);
 } // namespace std
 </xmp>
 
@@ -249,11 +362,15 @@ namespace std {
 
 A big thank you to Andrew Tomazos for replying to the author's e-mails about the prior art. Thank you to Arthur O'Dwyer for providing the author with incredible insight into the Committee's previous process for how they interpreted the Prior Art.
 
-A special thank you to Agustín Bergé for encouraging the author to talk to the creator of the Prior Art and getting started on this. Thank you to Tom Honermann for direction and insight on how to write a paper and apply for a proposal. 
+A special thank you to Agustín Bergé for encouraging the author to talk to the creator of the Prior Art and getting started on this. Thank you to Tom Honermann for direction and insight on how to write a paper and apply for a proposal.
+
+Thank you to Arvid Gerstmann for helping me understand and use the link-time tools.
+
+Thank you to Tony Van Eerd for valuable advice in improving the main text of this paper.
 
 Thank you to Lilly (Cpplang Slack, @lillypad) for the valuable bikeshed and hole-poking in original designs, alongside Ben Craig who very thoroughly explained his woes when trying to embed large firmware images into a C++ program for deployment into production.
 
-For all your hard work, I hope I can get this into C++. It would be my distinct honor to make all of your lives easier and better with the programming language we work in and love. ♥
+For all this hard work, it is the author's hope to carry this into C++. It would be the author's distinct honor to make development cycles easier and better with the programming language we work in and love. ♥
 
 <pre class=biblio>
 {
@@ -263,7 +380,28 @@ For all your hard work, I hope I can get this into C++. It would be my distinct 
 			"Jason Turner"
 		],
 		"title": "constexpr All The Things: CppCon 2017",
+		"href": "https://www.youtube.com/watch?v=PJwd4JLYJJY",
 		"date": "September 25th, 2017"
+	},
+	"nonius-visual-c-error": {
+		"authors": [
+			"R. Martinho Fernandes"
+		],
+		"href": "https://github.com/libnonius/nonius/blob/devel/include/nonius/reporters/html_reporter.h%2B%2B#L42",
+		"title": "nonius generated HTML Reporter",
+		"date": "September 1st, 2016"
+	},
+	"p1073r0": {
+		"authors": [
+			"Richard Smith",
+			"Andrew Sutton",
+			"Daveed Vandevoorde"
+		],
+		"href": "https://wg21.link/p1073r0",
+		"title": "constexpr! functions",
+		"status": "P",
+		"publisher": "WG21",
+		"date": "May 5th, 2018"
 	}
 }
 </pre>

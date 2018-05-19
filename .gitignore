@@ -1,3 +1,5 @@
 cmake-build-debug/
 .idea/
 implementation/plugins/build/
+old/xxd/xxd_data
+old/ld/ld_data.o
