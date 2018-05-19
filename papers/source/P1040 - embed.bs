@@ -1,6 +1,6 @@
 <pre class='metadata'>
 Title: std::embed
-Shortname: P1040
+Shortname: D01040
 Revision: r1-beta
 Audience: EWG, LEWG, SG15
 Status: P
@@ -10,7 +10,7 @@ URL:
 !Current: <a href="https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html</a>
 Editor: JeanHeyd Meneide
 Abstract: Accessing program-external resources at compile-time and making them available to the developer.
-Date: 2018-05-16
+Date: 2018-05-19
 Markup Shorthands: markdown yes, biblio yes, markup yes
 </pre>
 
