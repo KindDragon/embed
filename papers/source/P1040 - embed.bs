@@ -1,6 +1,6 @@
 <pre class='metadata'>
 Title: std::embed
-Shortname: D01040
+Shortname: D1040
 Revision: r1-beta
 Audience: EWG, LEWG, SG15
 Status: P
