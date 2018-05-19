@@ -228,7 +228,7 @@ There is a tool called [[incbin]] which is a 3rd party attempt at pulling files 
 
 ## Prior Art ## {#design-prior}
 
-There has been a lot of discussion over the years in many arenas, from Stack Overflow to mailing lists to meetings with the Committee itself. The latest advancements that had been brought to WG21's attention was [[p0373r0 | p0373r0 - File String Literals]]. It proposed the syntax `F"my_file.txt"` and `bF"my_file.txt"`, with a few other amenities, to load files at compilation time. The following is an analysis of the previous proposal.
+There has been a lot of discussion over the years in many arenas, from Stack Overflow to mailing lists to meetings with the Committee itself. The latest advancements that had been brought to WG21's attention was [[p0373r0|p0373r0 - File String Literals]]. It proposed the syntax `F"my_file.txt"` and `bF"my_file.txt"`, with a few other amenities, to load files at compilation time. The following is an analysis of the previous proposal.
 
 ### Literal-Based, constexpr ### {#design-prior-literal}
 
@@ -399,7 +399,7 @@ For all this hard work, it is the author's hope to carry this into C++. It would
 		"authors": [
 			"Dale Weiler (graphitemaster)"
 		],
-		"title": "incbin: inline assembler load files",
+		"title": "incbin: load files at 'assembly' time",
 		"href": "https://github.com/graphitemaster/incbin"
 	},
 	"p1073r0": {
