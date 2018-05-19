@@ -1192,7 +1192,7 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 6248c77951c39097e395664a9abb545dc9a4951d" name="generator">
-  <meta content="e9790eb032ff2cf13f44c2de45b2ec6376c28b10" name="document-revision">
+  <meta content="2116ad6d27400731f7e4f84c41b51b0b5155d879" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1439,7 +1439,8 @@ pre .property::before, pre .property::after {
        <ol class="toc">
         <li><a href="#design-practice-manual"><span class="secno">4.1.1</span> <span class="content">Manual Work</span></a>
         <li><a href="#design-practice-tools"><span class="secno">4.1.2</span> <span class="content">Processing Tools</span></a>
-        <li><a href="#design-practice-vendor"><span class="secno">4.1.3</span> <span class="content"><code class="highlight"><span class="n">ld</span></code>, resource files, and other vendor-specific tools</span></a>
+        <li><a href="#design-practice-vendor"><span class="secno">4.1.3</span> <span class="content"><code class="highlight"><span class="n">ld</span></code>, resource files, and other vendor-specific link-time tools</span></a>
+        <li><a href="#design.practice.incbin"><span class="secno">4.1.4</span> <span class="content">The <code class="highlight"><span class="n">incbin</span></code> tool</span></a>
        </ol>
       <li>
        <a href="#design-prior"><span class="secno">4.2</span> <span class="content">Prior Art</span></a>
@@ -1612,7 +1613,7 @@ pre .property::before, pre .property::after {
    <p>There are problems with the <code class="highlight"><span class="n">xxd</span> <span class="o">-</span><span class="n">i</span></code> or similar tool-based approach. Lexing and Parsing data-as-source-code adds an enormous overhead to actually reading and making that data available.</p>
    <p>Binary data as C(++) arrays provide the overhead of having to comma-delimit every single byte present, it also requires that the compiler verify every entry in that array is a valid literal or entry according to the C++ language.</p>
    <p>This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).</p>
-   <h4 class="heading settled" data-level="4.1.3" id="design-practice-vendor"><span class="secno">4.1.3. </span><span class="content"><code class="highlight"><span class="n">ld</span></code>, resource files, and other vendor-specific tools</span><a class="self-link" href="#design-practice-vendor"></a></h4>
+   <h4 class="heading settled" data-level="4.1.3" id="design-practice-vendor"><span class="secno">4.1.3. </span><span class="content"><code class="highlight"><span class="n">ld</span></code>, resource files, and other vendor-specific link-time tools</span><a class="self-link" href="#design-practice-vendor"></a></h4>
    <p>Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. An full, compilable example (except on Visual C++):</p>
    <ol start="0">
     <li data-md="">
@@ -1664,6 +1665,8 @@ pre .property::before, pre .property::after {
 </pre>
    <p>This scales a little bit better in terms of raw compilation time but is shockingly OS, vendor and platform specific in ways that novice developers would be able to handle fully. The macros are required to erase differences, lest subtle differences in name will destroy one’s ability to use these macros effectively. We ommitted the code for handling VC++ resource files because it is excessively verbose than what is present here.</p>
    <p>N.B.: Because these declarations are <code class="highlight"><span class="k">extern</span></code>, the values in the array cannot be accessed at compilation/translation-time.</p>
+   <h4 class="heading settled" data-level="4.1.4" id="design.practice.incbin"><span class="secno">4.1.4. </span><span class="content">The <code class="highlight"><span class="n">incbin</span></code> tool</span><a class="self-link" href="#design.practice.incbin"></a></h4>
+   <p>There is a tool called <a data-link-type="biblio" href="#biblio-incbin">[incbin]</a> which is a 3rd party attempt at pulling files in at "assembly time". Its approach is incredibly similar to <code class="highlight"><span class="n">ld</span></code>, with the caveat that files must be shipped with their binary. It unfortnately falls prey to the same problems of cross-platform woes when dealing with VC++, requiring preprocessing to work out in full.</p>
    <h3 class="heading settled" data-level="4.2" id="design-prior"><span class="secno">4.2. </span><span class="content">Prior Art</span><a class="self-link" href="#design-prior"></a></h3>
    <p>There has been a lot of discussion over the years in many arenas, from Stack Overflow to mailing lists to meetings with the Committee itself. The latest advancements that had been brought to WG21’s attention was [[p0373r0 | p0373r0 - File String Literals]]. It proposed the syntax <code class="highlight"><span class="n">F</span><span class="s">"my_file.txt"</span></code> and <code class="highlight"><span class="n">bF</span><span class="s">"my_file.txt"</span></code>, with a few other amenities, to load files at compilation time. The following is an analysis of the previous proposal.</p>
    <h4 class="heading settled" data-level="4.2.1" id="design-prior-literal"><span class="secno">4.2.1. </span><span class="content">Literal-Based, constexpr</span><a class="self-link" href="#design-prior-literal"></a></h4>
@@ -1902,6 +1905,8 @@ pre .property::before, pre .property::after {
   <dl>
    <dt id="biblio-constexpr-all-the-things">[CONSTEXPR-ALL-THE-THINGS]
    <dd>Ben Deane; Jason Turner. <a href="https://www.youtube.com/watch?v=PJwd4JLYJJY">constexpr All The Things: CppCon 2017</a>. September 25th, 2017. URL: <a href="https://www.youtube.com/watch?v=PJwd4JLYJJY">https://www.youtube.com/watch?v=PJwd4JLYJJY</a>
+   <dt id="biblio-incbin">[INCBIN]
+   <dd>Dale Weiler (graphitemaster). <a href="https://github.com/graphitemaster/incbin">incbin: inline assembler load files</a>. URL: <a href="https://github.com/graphitemaster/incbin">https://github.com/graphitemaster/incbin</a>
    <dt id="biblio-nonius-visual-c-error">[NONIUS-VISUAL-C-ERROR]
    <dd>R. Martinho Fernandes. <a href="https://github.com/libnonius/nonius/blob/devel/include/nonius/reporters/html_reporter.h%2B%2B#L42">nonius generated HTML Reporter</a>. September 1st, 2016. URL: <a href="https://github.com/libnonius/nonius/blob/devel/include/nonius/reporters/html_reporter.h%2B%2B#L42">https://github.com/libnonius/nonius/blob/devel/include/nonius/reporters/html_reporter.h%2B%2B#L42</a>
    <dt id="biblio-p0466r1">[P0466R1]

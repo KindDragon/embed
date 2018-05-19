@@ -166,7 +166,7 @@ Binary data as C(++) arrays provide the overhead of having to comma-delimit ever
 
 This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).
 
-### `ld`, resource files, and other vendor-specific tools ### {#design-practice-vendor}
+### `ld`, resource files, and other vendor-specific link-time tools ### {#design-practice-vendor}
 
 Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. An full, compilable example (except on Visual C++):
 
@@ -221,6 +221,10 @@ int main() {
 This scales a little bit better in terms of raw compilation time but is shockingly OS, vendor and platform specific in ways that novice developers would be able to handle fully. The macros are required to erase differences, lest subtle differences in name will destroy one's ability to use these macros effectively. We ommitted the code for handling VC++ resource files because it is excessively verbose than what is present here.
 
 N.B.: Because these declarations are `extern`, the values in the array cannot be accessed at compilation/translation-time. 
+
+### The `incbin` tool ### {#design.practice.incbin}
+
+There is a tool called [[incbin]] which is a 3rd party attempt at pulling files in at "assembly time". Its approach is incredibly similar to `ld`, with the caveat that files must be shipped with their binary. It unfortnately falls prey to the same problems of cross-platform woes when dealing with VC++, requiring preprocessing to work out in full.
 
 ## Prior Art ## {#design-prior}
 
@@ -390,6 +394,13 @@ For all this hard work, it is the author's hope to carry this into C++. It would
 		"href": "https://github.com/libnonius/nonius/blob/devel/include/nonius/reporters/html_reporter.h%2B%2B#L42",
 		"title": "nonius generated HTML Reporter",
 		"date": "September 1st, 2016"
+	},
+	"incbin": {
+		"authors": [
+			"Dale Weiler (graphitemaster)"
+		],
+		"title": "incbin: inline assembler load files",
+		"href": "https://github.com/graphitemaster/incbin"
 	},
 	"p1073r0": {
 		"authors": [
