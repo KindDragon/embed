@@ -52,7 +52,8 @@ int main (int, char*[]) {
 	
 	// assert this is a SPIRV file, compile-time	
 	static_assert(fxaa_binary[0] == 0x03 && fxaa_binary[1] == 0x02
-		&& fxaa_binary[2] == 0x23 && fxaa_binary[3] == 0x07, "given wrong SPIRV data, check rebuild or check the binaries!")
+		&& fxaa_binary[2] == 0x23 && fxaa_binary[3] == 0x07
+		, "given wrong SPIRV data, check rebuild or check the binaries!")
 
 	auto context = make_vulkan_context();
 
@@ -114,117 +115,19 @@ int main() {
 
 This happens often in the case of people who have not yet taken the "add a build step" mantra to heart. The biggest problem is that the above C++-ready source file is no longer valid in as its original representation, meaning the file as-is cannot be passed to any validation tools, schema checkers, or otherwise. This hurts the portability and interop story of C++ with other tools and languages.
 
-Furthermore, if the string literal is too big vendors such [[nonius-visual-c-error|as VC++ will hard-error the build]].
+Furthermore, if the string literal is too big vendors such as VC++ will hard error [[nonius-visual-c-error|the build (example from Nonius, benchmarking framework)]].
 
 ### Processing Tools ### {#design-practice-tools}
 
-Other developers use pre-processors for data that can't be easily hacked into a C++ source-code appropriate state (e.g., binary). The most popular one is `xxd -i my_data.bin`, which outputs an array in a file which developers then include. The name of the array is the named after the input file. An example:
-
-1. Run the tool over the data (`xxd -i xxd_data.bin > xxd_data.h`) to obtain the generated file (`xxd_data.h`):
-
-<xmp highlight="C++">
-unsigned char xxd_data_bin[] = {
-  0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64,
-  0x0a
-};
-unsigned int xxd_data_bin_len = 13;
-</xmp>
-
-2. Compile `main.cpp`:
-
-<xmp highlight="C++">
-#include <iostream>
-#include <string_view>
-
-// prefix as constexpr
-constexpr
-#include "xxd_data.h"
-;
-
-template <typename T, std::size_t N>
-constexpr std::size_t array_size(const T (&)\[N]) {
-    return N;
-}
-
-int main() {
-    static_assert(xxd_data_bin[0] == 'H');
-    static_assert(array_size(xxd_data_bin) == 13);
-
-    std::string_view data_view(
-        reinterpret_cast<const char*>(xxd_data_bin),
-        array_size(xxd_data_bin));
-    std::cout << data_view << std::endl; // Hello, World!
-    return 0;
-}
-</xmp>
-
-Others still use python or other small scripting languages as part of their build process, outputting data in the exact C++ format that they require.
-
-There are problems with the `xxd -i` or similar tool-based approach. Lexing and Parsing data-as-source-code adds an enormous overhead to actually reading and making that data available.
-
-Binary data as C(++) arrays provide the overhead of having to comma-delimit every single byte present, it also requires that the compiler verify every entry in that array is a valid literal or entry according to the C++ language.
-
-This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).
+Other developers use pre-processors for data that can't be easily hacked into a C++ source-code appropriate state (e.g., binary). The most popular one is `xxd -i my_data.bin`, which outputs an array in a file which developers then include. This is problematic because it turns binary data in C++ source. In many cases, this results in a larger file due to having to restructure the data to fit grammar requirements. It also results in needing an extra build step, which throws any programmer immediately at the mercy of build tools and project management. An example and further analysis can be found in the [[#appendix-tools]] section.
 
 ### `ld`, resource files, and other vendor-specific link-time tools ### {#design-practice-vendor}
 
-Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. An full, compilable example (except on Visual C++):
-
-0. Have a file ld_data.bin with the contents `Hello, World!`.
-
-1. Run `ld -r binary -o ld_data.o ld_data.bin`.
-
-2. Compile the following `main.cpp` with `c++ -std=c++17 ld_data.o main.cpp`:
-
-<xmp highlight="C++">
-#include <iostream>
-#include <string_view>
-
-#ifdef __APPLE__
-#include <mach-o/getsect.h>
-
-#define DECLARE_LD(NAME) extern const unsigned char _section$__DATA__##NAME[];
-#define LD_NAME(NAME) _section$__DATA__##NAME
-#define LD_SIZE(NAME) (getsectbyname("__DATA", "__" #NAME)->size)
-
-#elif (defined __MINGW32__) /* mingw */
-
-#define DECLARE_LD(NAME)                                 \
-	extern const unsigned char binary_##NAME##_start[]; \
-	extern const unsigned char binary_##NAME##_end[];
-#define LD_NAME(NAME) binary_##NAME##_start
-#define LD_SIZE(NAME) ((binary_##NAME##_end) - (binary_##NAME##_start))
-
-#else /* gnu/linux ld */
-
-#define DECLARE_LD(NAME)                                  \
-	extern const unsigned char _binary_##NAME##_start[]; \
-	extern const unsigned char _binary_##NAME##_end[];
-#define LD_NAME(NAME) _binary_##NAME##_start
-#define LD_SIZE(NAME) ((_binary_##NAME##_end) - (_binary_##NAME##_start))
-#endif
-
-DECLARE_LD(ld_data_bin);
-
-int main() {
-	// impossible
-	//static_assert(xxd_data_bin[0] == 'H');
-	std::string_view data_view(
-		reinterpret_cast<const char*>(LD_NAME(ld_data_bin)), 
-		LD_SIZE(ld_data_bin)
-	);
-	std::cout << data_view << std::endl; // Hello, World!
-	return 0;
-}
-</xmp>
-
-This scales a little bit better in terms of raw compilation time but is shockingly OS, vendor and platform specific in ways that novice developers would be able to handle fully. The macros are required to erase differences, lest subtle differences in name will destroy one's ability to use these macros effectively. We ommitted the code for handling VC++ resource files because it is excessively verbose than what is present here.
-
-N.B.: Because these declarations are `extern`, the values in the array cannot be accessed at compilation/translation-time. 
+Resource files and other "link time" or post-processing measures have one benefit over the previous method: they are fast to perform in terms of compilation time. A example can be seen in the [[#appendix-ld]] section.
 
 ### The `incbin` tool ### {#design.practice.incbin}
 
-There is a tool called [[incbin]] which is a 3rd party attempt at pulling files in at "assembly time". Its approach is incredibly similar to `ld`, with the caveat that files must be shipped with their binary. It unfortnately falls prey to the same problems of cross-platform woes when dealing with VC++, requiring preprocessing to work out in full.
+There is a tool called [[incbin]] which is a 3rd party attempt at pulling files in at "assembly time". Its approach is incredibly similar to `ld`, with the caveat that files must be shipped with their binary. It unfortnately falls prey to the same problems of cross-platform woes when dealing with VC++, requiring additional pre-processing to work out in full.
 
 ## Prior Art ## {#design-prior}
 
@@ -302,13 +205,13 @@ The author has consulted dozens of C++ users in each of the Text Processing, Vid
 
 ### Open Questions ### {#help-bikeshed-open}
 
-1. Is a magic library function in a header the most desirable? Other proposals have fallen flat, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.
+1. Is a magic library function in a header the most desirable? Other proposals have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.
 
 2. Should the return `std::span` be const-qualified, as in `std::span<const std::byte>`?
 
 ### Answered Questions ### {#help-bikeshed-answered}
 
-Question: Should `std::embedded` just be replaced with `std::span`?
+Question: Should `std::embedded` ([[p1040r0|std::embed revision 0]]) just be replaced with `std::span`?
 
 Answer: Yes. `std::span` covers all of the use cases here, is `constexpr`, and makes the most sense.
 
@@ -362,6 +265,116 @@ namespace std {
 
 2. If this function is called at runtime, then the behavior is unspecified.
 
+# Appendix # {#appendix}
+
+## Sadness ## {#appendix-sadness}
+
+Other techniques used include pre-processing data, link-time based tooling, and assembly-time runtime loading. They are detailed below, for a complete picture of today's sad landscape of options.
+
+### Pre-Processing Tools Sadness ### {#appendix-tools}
+
+1. Run the tool over the data (`xxd -i xxd_data.bin > xxd_data.h`) to obtain the generated file (`xxd_data.h`):
+
+<xmp highlight="C++">
+unsigned char xxd_data_bin[] = {
+  0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64,
+  0x0a
+};
+unsigned int xxd_data_bin_len = 13;
+</xmp>
+
+2. Compile `main.cpp`:
+
+<xmp highlight="C++">
+#include <iostream>
+#include <string_view>
+
+// prefix as constexpr
+constexpr
+#include "xxd_data.h"
+;
+
+template <typename T, std::size_t N>
+constexpr std::size_t array_size(const T (&)\[N]) {
+    return N;
+}
+
+int main() {
+    static_assert(xxd_data_bin[0] == 'H');
+    static_assert(array_size(xxd_data_bin) == 13);
+
+    std::string_view data_view(
+        reinterpret_cast<const char*>(xxd_data_bin),
+        array_size(xxd_data_bin));
+    std::cout << data_view << std::endl; // Hello, World!
+    return 0;
+}
+</xmp>
+
+Others still use python or other small scripting languages as part of their build process, outputting data in the exact C++ format that they require.
+
+There are problems with the `xxd -i` or similar tool-based approach. Lexing and Parsing data-as-source-code adds an enormous overhead to actually reading and making that data available.
+
+Binary data as C(++) arrays provide the overhead of having to comma-delimit every single byte present, it also requires that the compiler verify every entry in that array is a valid literal or entry according to the C++ language.
+
+This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).
+
+### `ld` Sadness ### {#appendix-ld}
+
+A full, compilable example (except on Visual C++):
+
+0. Have a file ld_data.bin with the contents `Hello, World!`.
+
+1. Run `ld -r binary -o ld_data.o ld_data.bin`.
+
+2. Compile the following `main.cpp` with `c++ -std=c++17 ld_data.o main.cpp`:
+
+<xmp highlight="C++">
+#include <iostream>
+#include <string_view>
+
+#ifdef __APPLE__
+#include <mach-o/getsect.h>
+
+#define DECLARE_LD(NAME) extern const unsigned char _section$__DATA__##NAME[];
+#define LD_NAME(NAME) _section$__DATA__##NAME
+#define LD_SIZE(NAME) (getsectbyname("__DATA", "__" #NAME)->size)
+
+#elif (defined __MINGW32__) /* mingw */
+
+#define DECLARE_LD(NAME)                                 \
+	extern const unsigned char binary_##NAME##_start[]; \
+	extern const unsigned char binary_##NAME##_end[];
+#define LD_NAME(NAME) binary_##NAME##_start
+#define LD_SIZE(NAME) ((binary_##NAME##_end) - (binary_##NAME##_start))
+
+#else /* gnu/linux ld */
+
+#define DECLARE_LD(NAME)                                  \
+	extern const unsigned char _binary_##NAME##_start[]; \
+	extern const unsigned char _binary_##NAME##_end[];
+#define LD_NAME(NAME) _binary_##NAME##_start
+#define LD_SIZE(NAME) ((_binary_##NAME##_end) - (_binary_##NAME##_start))
+#endif
+
+DECLARE_LD(ld_data_bin);
+
+int main() {
+	// impossible
+	//static_assert(xxd_data_bin[0] == 'H');
+	std::string_view data_view(
+		reinterpret_cast<const char*>(LD_NAME(ld_data_bin)), 
+		LD_SIZE(ld_data_bin)
+	);
+	std::cout << data_view << std::endl; // Hello, World!
+	return 0;
+}
+</xmp>
+
+This scales a little bit better in terms of raw compilation time but is shockingly OS, vendor and platform specific in ways that novice developers would be able to handle fully. The macros are required to erase differences, lest subtle differences in name will destroy one's ability to use these macros effectively. We ommitted the code for handling VC++ resource files because it is excessively verbose than what is present here.
+
+N.B.: Because these declarations are `extern`, the values in the array cannot be accessed at compilation/translation-time.
+
 # Acknowledgements # {#acknowledgements}
 
 A big thank you to Andrew Tomazos for replying to the author's e-mails about the prior art. Thank you to Arthur O'Dwyer for providing the author with incredible insight into the Committee's previous process for how they interpreted the Prior Art.
@@ -410,6 +423,16 @@ For all this hard work, it is the author's hope to carry this into C++. It would
 		],
 		"href": "https://wg21.link/p1073r0",
 		"title": "constexpr! functions",
+		"status": "P",
+		"publisher": "WG21",
+		"date": "May 5th, 2018"
+	},
+	"p1040r0": {
+		"authors": [
+			"JeanHeyd Meneide"
+		],
+		"href": "https://wg21.link/p1040r0",
+		"title": "std::embed",
 		"status": "P",
 		"publisher": "WG21",
 		"date": "May 5th, 2018"
