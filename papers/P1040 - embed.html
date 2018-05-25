@@ -1192,7 +1192,7 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 6248c77951c39097e395664a9abb545dc9a4951d" name="generator">
-  <meta content="5a0c6b7b439bab98415e880f23834eab196545d0" name="document-revision">
+  <meta content="a4676f9461ea4bc3113bf8887874989a89e619e4" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1505,15 +1505,45 @@ pre .property::before, pre .property::after {
    <p>Every C and C++ programmer -- at some point -- attempts to <code class="highlight"><span class="cp">#include</span></code> large chunks of non-C++ data into their code. Of course, <code class="highlight"><span class="cp">#include</span></code> expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Thusly, many different tools and practices were adapted to handle this, as far back as 1995 with the <code class="highlight"><span class="n">xxd</span></code> tool. Many industries need such functionality, including (but hardly limited to):</p>
    <ul>
     <li data-md="">
-     <p>Financial Development (representing coefficients for ahead-of-time algorithms as data pushed-in at build time)</p>
+     <p>Financial Development</p>
+     <ul>
+      <li data-md="">
+       <p>representing coefficients and numeric constants for performance-critical algorithms;</p>
+     </ul>
     <li data-md="">
-     <p>Game Development (assets that do not change at runtime, including Shader code, icons, and fixed textures)</p>
+     <p>Game Development</p>
+     <ul>
+      <li data-md="">
+       <p>assets that do not change at runtime</p>
+      <li data-md="">
+       <p>Shader code</p>
+      <li data-md="">
+       <p>Graphical assets, such as icons, fixed textures and other data;</p>
+     </ul>
     <li data-md="">
-     <p>Embedded Development (storing large chunks of binary, such as firmware)</p>
+     <p>Embedded Development</p>
+     <ul>
+      <li data-md="">
+       <p>storing large chunks of binary, such as firmware, in a well-compressed format</p>
+      <li data-md="">
+       <p>placing data in memory on chips and systems that do not have an operating system or file system;</p>
+     </ul>
     <li data-md="">
-     <p>Application Development (compressed binary blobs representing data and non-C++ script code that is not changed at runtime), and</p>
+     <p>Application Development</p>
+     <ul>
+      <li data-md="">
+       <p>compressed binary blobs representing data</p>
+      <li data-md="">
+       <p>non-C++ script code that is not changed at runtime; and</p>
+     </ul>
     <li data-md="">
-     <p>Server Development (configuration parameters which are known at build-time and are baked in to set limits and give compile-time information to tweak performance under certain loads).</p>
+     <p>Server Development</p>
+     <ul>
+      <li data-md="">
+       <p>configuration parameters which are known at build-time and are baked in to set limits and give compile-time information to tweak performance under certain loads</p>
+      <li data-md="">
+       <p>SSL/TLS Certificates hard-coded into your executable (requiring a rebuild and potential authorization before deploying new certificates).</p>
+     </ul>
    </ul>
    <p>In the pursuit of this goal, these tools have proven to have inadequacies and contribute poorly to the C++ development cycle as it continues to scale up for larger and better low-end devices and high-performance machines, bogging developers down with menial build tasks and trying to cover-up disappointing differences between platforms.</p>
    <p>The request for some form of <code class="highlight"><span class="cp">#include</span>_string</code> or similar dates back quite a long time, with one of the oldest stack overflow questions asked-and-answered about it dating back nearly 10 years. Predating even that is a plethora of mailing list posts and forum posts asking how to get script code and other things that are not likely to change into the binary.</p>
@@ -1544,7 +1574,7 @@ pre .property::before, pre .property::after {
 <span class="p">}</span>
 </pre>
    <h2 class="heading settled" data-level="3" id="scope"><span class="secno">3. </span><span class="content">Scope and Impact</span><a class="self-link" href="#scope"></a></h2>
-   <p><code class="highlight"><span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> <span class="n">string_view</span> <span class="n">resource_identifier</span><span class="p">,</span> <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span> <span class="p">)</span></code> is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code>, making the feature entirely-opt-in and preprocessor-testable using <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>.</p>
+   <p><code class="highlight"><span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> <span class="n">string_view</span> <span class="n">resource_identifier</span><span class="p">,</span> <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span> <span class="p">)</span></code> is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics, builtins, or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code>, making the feature entirely-opt-in and preprocessor-testable using <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>.</p>
    <h2 class="heading settled" data-level="4" id="design"><span class="secno">4. </span><span class="content">Design Decisions</span><a class="self-link" href="#design"></a></h2>
    <p><code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code> avoids using the preprocessor or defining new string literal syntax like its predecessors, preferring the use of a free function in the <code class="highlight"><span class="n">std</span></code> namespace and some associated utility flags. <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code>'s design is derived heavily from community feedback plus the rejection of the prior art up to this point, as well as the community needs demonstrated by existing practice and their pit falls.</p>
    <h3 class="heading settled" data-level="4.1" id="design-practice"><span class="secno">4.1. </span><span class="content">Current Practice</span><a class="self-link" href="#design-practice"></a></h3>

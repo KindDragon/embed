@@ -32,11 +32,21 @@ This paper introduces a function `std::embed` in the `<embed>` header for pullin
 
 Every C and C++ programmer -- at some point -- attempts to `#include` large chunks of non-C++ data into their code. Of course, `#include` expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Thusly, many different tools and practices were adapted to handle this, as far back as 1995 with the `xxd` tool. Many industries need such functionality, including (but hardly limited to):
 
-- Financial Development (representing coefficients for ahead-of-time algorithms as data pushed-in at build time)
-- Game Development (assets that do not change at runtime, including Shader code, icons, and fixed textures)
-- Embedded Development (storing large chunks of binary, such as firmware)
-- Application Development (compressed binary blobs representing data and non-C++ script code that is not changed at runtime), and
-- Server Development (configuration parameters which are known at build-time and are baked in to set limits and give compile-time information to tweak performance under certain loads).
+- Financial Development
+	- representing coefficients and numeric constants for performance-critical algorithms;
+- Game Development
+	- assets that do not change at runtime
+	- Shader code
+	- Graphical assets, such as icons, fixed textures and other data;
+- Embedded Development
+	- storing large chunks of binary, such as firmware, in a well-compressed format
+	- placing data in memory on chips and systems that do not have an operating system or file system;
+- Application Development
+	- compressed binary blobs representing data
+	- non-C++ script code that is not changed at runtime; and
+- Server Development
+	- configuration parameters which are known at build-time and are baked in to set limits and give compile-time information to tweak performance under certain loads
+	- SSL/TLS Certificates hard-coded into your executable (requiring a rebuild and potential authorization before deploying new certificates).
 
 In the pursuit of this goal, these tools have proven to have inadequacies and contribute poorly to the C++ development cycle as it continues to scale up for larger and better low-end devices and high-performance machines, bogging developers down with menial build tasks and trying to cover-up disappointing differences between platforms.
 
@@ -73,7 +83,7 @@ int main (int, char*[]) {
 
 # Scope and Impact # {#scope}
 
-`constexpr span<byte> embed( string_view resource_identifier, embed_options options = embed_options::none )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is `<embed>`, making the feature entirely-opt-in and preprocessor-testable using `__has_include( <embed> )`.
+`constexpr span<byte> embed( string_view resource_identifier, embed_options options = embed_options::none )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics, builtins, or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is `<embed>`, making the feature entirely-opt-in and preprocessor-testable using `__has_include( <embed> )`.
 
 # Design Decisions # {#design}
 
