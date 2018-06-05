@@ -992,57 +992,92 @@ Possible extra rowspan handling
 	.toc > li li          { font-weight: normal; }
 	.toc > li li li       { font-size:   95%;    }
 	.toc > li li li li    { font-size:   90%;    }
+	.toc > li li li li .secno { font-size: 85%; }
 	.toc > li li li li li { font-size:   85%;    }
+	.toc > li li li li li .secno { font-size: 100%; }
 
-	.toc > li             { margin: 1.5rem 0;    }
-	.toc > li li          { margin: 0.3rem 0;    }
-	.toc > li li li       { margin-left: 2rem;   }
+	/* @supports not (display:grid) { */
+		.toc > li             { margin: 1.5rem 0;    }
+		.toc > li li          { margin: 0.3rem 0;    }
+		.toc > li li li       { margin-left: 2rem;   }
 
-	/* Section numbers in a column of their own */
-	.toc .secno {
-		float: left;
-		width: 4rem;
-		white-space: nowrap;
-	}
-	.toc > li li li li .secno {
-		font-size: 85%;
-	}
-	.toc > li li li li li .secno {
-		font-size: 100%;
-	}
+		/* Section numbers in a column of their own */
+		.toc .secno {
+			float: left;
+			width: 4rem;
+			white-space: nowrap;
+		}
 
-	:not(li) > .toc              { margin-left:  5rem; }
-	.toc .secno                  { margin-left: -5rem; }
-	.toc > li li li .secno       { margin-left: -7rem; }
-	.toc > li li li li .secno    { margin-left: -9rem; }
-	.toc > li li li li li .secno { margin-left: -11rem; }
+		.toc li {
+			clear: both;
+		}
 
-	/* Tighten up indentation in narrow ToCs */
-	@media (max-width: 30em) {
-		:not(li) > .toc              { margin-left:  4rem; }
-		.toc .secno                  { margin-left: -4rem; }
-		.toc > li li li              { margin-left:  1rem; }
-		.toc > li li li .secno       { margin-left: -5rem; }
-		.toc > li li li li .secno    { margin-left: -6rem; }
-		.toc > li li li li li .secno { margin-left: -7rem; }
-	}
-	@media screen and (min-width: 78em) {
-		body:not(.toc-inline) :not(li) > .toc              { margin-left:  4rem; }
-		body:not(.toc-inline) .toc .secno                  { margin-left: -4rem; }
-		body:not(.toc-inline) .toc > li li li              { margin-left:  1rem; }
-		body:not(.toc-inline) .toc > li li li .secno       { margin-left: -5rem; }
-		body:not(.toc-inline) .toc > li li li li .secno    { margin-left: -6rem; }
-		body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
-	}
-	body.toc-sidebar #toc :not(li) > .toc              { margin-left:  4rem; }
-	body.toc-sidebar #toc .toc .secno                  { margin-left: -4rem; }
-	body.toc-sidebar #toc .toc > li li li              { margin-left:  1rem; }
-	body.toc-sidebar #toc .toc > li li li .secno       { margin-left: -5rem; }
-	body.toc-sidebar #toc .toc > li li li li .secno    { margin-left: -6rem; }
-	body.toc-sidebar #toc .toc > li li li li li .secno { margin-left: -7rem; }
+		:not(li) > .toc              { margin-left:  5rem; }
+		.toc .secno                  { margin-left: -5rem; }
+		.toc > li li li .secno       { margin-left: -7rem; }
+		.toc > li li li li .secno    { margin-left: -9rem; }
+		.toc > li li li li li .secno { margin-left: -11rem; }
 
-	.toc li {
-		clear: both;
+		/* Tighten up indentation in narrow ToCs */
+		@media (max-width: 30em) {
+			:not(li) > .toc              { margin-left:  4rem; }
+			.toc .secno                  { margin-left: -4rem; }
+			.toc > li li li              { margin-left:  1rem; }
+			.toc > li li li .secno       { margin-left: -5rem; }
+			.toc > li li li li .secno    { margin-left: -6rem; }
+			.toc > li li li li li .secno { margin-left: -7rem; }
+		}
+	/* } */
+
+	@supports (display:grid) {
+		/* Use #toc over .toc to override non-@supports rules. */
+		#toc {
+			display: grid;
+			align-content: start;
+			grid-template-columns: auto 1fr;
+			grid-column-gap: 1rem;
+			column-gap: 1rem;
+			grid-row-gap: .6rem;
+			row-gap: .6rem;
+		}
+		#toc h2 {
+			grid-column: 1 / -1;
+			margin-bottom: 0;
+		}
+		#toc ol,
+		#toc li,
+		#toc a {
+			display: contents;
+			/* Switch <a> to subgrid when supported */
+		}
+		#toc span {
+			margin: 0;
+		}
+		#toc > .toc > li > a > span {
+			/* The spans of the top-level list,
+			   comprising the first items of each top-level section. */
+			margin-top: 1.1rem;
+		}
+		#toc .secno {
+			grid-column: 1;
+			width: auto;
+		}
+		#toc .content {
+			grid-column: 2;
+			width: auto;
+			margin-right: 1rem;
+		}
+		#toc .content:hover {
+			background: rgba(75%, 75%, 75%, .25);
+			border-bottom: 3px solid #054572;
+			margin-bottom: -3px;
+		}
+		#toc li li li .content {
+			margin-left: 1rem;
+		}
+		#toc li li li li .content {
+			margin-left: 2rem;
+		}
 	}
 
 
@@ -1191,8 +1226,8 @@ Possible extra rowspan handling
       text-align: center;
     }
   </style>
-  <meta content="Bikeshed version 6248c77951c39097e395664a9abb545dc9a4951d" name="generator">
-  <meta content="74a904ac27943d34b17d60936241e5fe1bee7af0" name="document-revision">
+  <meta content="Bikeshed version 60c7cf64c0efdd39a8c0261dfad14adb1da62902" name="generator">
+  <meta content="dd5f53eaa0728258ed7f4ecfc3d4bf1289ebfa0c" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1454,9 +1489,10 @@ pre .property::before, pre .property::after {
        <ol class="toc">
         <li><a href="#design-goals-impldefn"><span class="secno">4.3.1</span> <span class="content">Implementation Defined</span></a>
         <li><a href="#design-goals-binary"><span class="secno">4.3.2</span> <span class="content">Binary Only</span></a>
-        <li><a href="#design-goals-null"><span class="secno">4.3.3</span> <span class="content">Opt-in, Optional Null Termination</span></a>
-        <li><a href="#design-goals-options"><span class="secno">4.3.4</span> <span class="content">Options</span></a>
-        <li><a href="#design-goals-constexpr"><span class="secno">4.3.5</span> <span class="content">Constexpr Compatibility</span></a>
+        <li><a href="#design-goals-null"><span class="secno">4.3.3</span> <span class="content">Opt-in and Optional Null Termination</span></a>
+        <li><a href="#design-goals-align"><span class="secno">4.3.4</span> <span class="content">Opt-in Alignment</span></a>
+        <li><a href="#design-goals-options"><span class="secno">4.3.5</span> <span class="content">Options</span></a>
+        <li><a href="#design-goals-constexpr"><span class="secno">4.3.6</span> <span class="content">Constexpr Compatibility</span></a>
        </ol>
      </ol>
     <li>
@@ -1497,6 +1533,7 @@ pre .property::before, pre .property::after {
      <p>r1</p>
      <p>Change <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminated</span></code> to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>.</p>
      <p>Add more code demonstrating the old way and motivating examples.</p>
+     <p>Incorporate LEWG feedback, particularly alignment requirements illuminated by Odin Holmes and Niall Douglass and the need for a feature macro on top of having <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>.</p>
     <li data-md="">
      <p>r0</p>
      <p>Initial release.</p>
@@ -1514,11 +1551,9 @@ pre .property::before, pre .property::after {
      <p>Game Development</p>
      <ul>
       <li data-md="">
-       <p>assets that do not change at runtime</p>
+       <p>assets that do not change at runtime, such as icons, fixed textures and other data</p>
       <li data-md="">
-       <p>Shader code</p>
-      <li data-md="">
-       <p>Graphical assets, such as icons, fixed textures and other data;</p>
+       <p>Shader and scripting code;</p>
      </ul>
     <li data-md="">
      <p>Embedded Development</p>
@@ -1551,18 +1586,18 @@ pre .property::before, pre .property::after {
 <pre class="highlight"><span class="cp">#include</span> &lt;embed><span class="cp"></span>
 <span class="cp"></span>
 <span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span><span class="p">[])</span> <span class="p">{</span>
-  <span class="k">constexpr</span> <span class="n">std</span><span class="o">::</span><span class="n">span</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span> <span class="n">fxaa_binary</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span><span class="s">"fxaa.spirv"</span><span class="p">);</span>
+  <span class="k">constexpr</span> <span class="n">std</span><span class="o">::</span><span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span> <span class="n">fxaa_binary</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"fxaa.spirv"</span> <span class="p">);</span>
 	
   <span class="c1">// assert this is a SPIRV file, compile-time  </span>
-<span class="c1"></span>  <span class="k">static_assert</span><span class="p">(</span><span class="n">fxaa_binary</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x03</span> <span class="o">&amp;&amp;</span> <span class="n">fxaa_binary</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x02</span>
+<span class="c1"></span>  <span class="k">static_assert</span><span class="p">(</span> <span class="n">fxaa_binary</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x03</span> <span class="o">&amp;&amp;</span> <span class="n">fxaa_binary</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x02</span>
     <span class="o">&amp;&amp;</span> <span class="n">fxaa_binary</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x23</span> <span class="o">&amp;&amp;</span> <span class="n">fxaa_binary</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x07</span>
-    <span class="p">,</span> <span class="s">"given wrong SPIRV data, check rebuild or check the binaries!"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="s">"given wrong SPIRV data, check rebuild or check the binaries!"</span> <span class="p">)</span>
 
   <span class="k">auto</span> <span class="n">context</span> <span class="o">=</span> <span class="n">make_vulkan_context</span><span class="p">();</span>
 
   <span class="c1">// data kept around and made available for binary</span>
 <span class="c1"></span>  <span class="c1">// to use at runtime</span>
-<span class="c1"></span>  <span class="k">auto</span> <span class="n">fxaa_shader</span> <span class="o">=</span> <span class="n">make_shader</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">fxaa_binary</span><span class="p">);</span>
+<span class="c1"></span>  <span class="k">auto</span> <span class="n">fxaa_shader</span> <span class="o">=</span> <span class="n">make_shader</span><span class="p">(</span> <span class="n">context</span><span class="p">,</span> <span class="n">fxaa_binary</span> <span class="p">);</span>
 
   <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
     <span class="c1">// ...</span>
@@ -1574,7 +1609,7 @@ pre .property::before, pre .property::after {
 <span class="p">}</span>
 </pre>
    <h2 class="heading settled" data-level="3" id="scope"><span class="secno">3. </span><span class="content">Scope and Impact</span><a class="self-link" href="#scope"></a></h2>
-   <p><code class="highlight"><span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> <span class="n">string_view</span> <span class="n">resource_identifier</span><span class="p">,</span> <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span> <span class="p">)</span></code> is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics, builtins, or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code>, making the feature entirely-opt-in and preprocessor-testable using <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>.</p>
+   <p><code class="highlight"><span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> <span class="n">string_view</span> <span class="n">resource_identifier</span><span class="p">,</span> <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">alignment</span> <span class="o">=</span> <span class="k">alignof</span><span class="p">(</span><span class="n">byte</span><span class="p">)</span> <span class="p">)</span></code> is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics, builtins, or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code>, making the feature entirely-opt-in. It is preprocessor-testable using <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>, and also exposes a feature macro when included called <code class="highlight"><span class="n">__cpp_lib_embed</span></code>.</p>
    <h2 class="heading settled" data-level="4" id="design"><span class="secno">4. </span><span class="content">Design Decisions</span><a class="self-link" href="#design"></a></h2>
    <p><code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code> avoids using the preprocessor or defining new string literal syntax like its predecessors, preferring the use of a free function in the <code class="highlight"><span class="n">std</span></code> namespace and some associated utility flags. <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code>'s design is derived heavily from community feedback plus the rejection of the prior art up to this point, as well as the community needs demonstrated by existing practice and their pit falls.</p>
    <h3 class="heading settled" data-level="4.1" id="design-practice"><span class="secno">4.1. </span><span class="content">Current Practice</span><a class="self-link" href="#design-practice"></a></h3>
@@ -1626,32 +1661,47 @@ pre .property::before, pre .property::after {
    <p>Because the proposal used a string literal, several questions came up as to the actual encoding of the returned information. The author gave both <code class="highlight"><span class="n">bF</span><span class="s">"my_file.txt"</span></code> and <code class="highlight"><span class="n">F</span><span class="s">"my_file.txt"</span></code> to separate binary versus string-based arrays of returns. Not only did this conflate issues with expectations in the previous section, it also became a heavily contested discussion on both the mailing list group discussion of the original proposal and in the paper itself. This is likely one of the biggest pitfalls between separating "binary" data from "string" data: imbuing an object with string-like properties at translation time provide for all the same hairy questions around source/execution character set and the contents of a literal.</p>
    <h3 class="heading settled" data-level="4.3" id="design-goals"><span class="secno">4.3. </span><span class="content">Design Goals</span><a class="self-link" href="#design-goals"></a></h3>
    <p>Because of the aforementioned reasons, it seems more prudent to take a "compiler intrinsic"/"magic function" approach. The function takes the form:</p>
-<pre class="highlight"><span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> 
+<pre class="highlight"><span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> 
   <span class="n">string_view</span> <span class="n">resource_identifier</span><span class="p">,</span> 
-  <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span>
+  <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span><span class="p">,</span> 
+  <span class="kt">size_t</span> <span class="n">alignment</span> <span class="o">=</span> <span class="k">alignof</span><span class="p">(</span><span class="n">byte</span><span class="p">)</span>
 <span class="p">);</span>
 </pre>
    <p><code class="highlight"><span class="n">resource_identifier</span></code> is processed in an implementation-defined manner to pull resources into C++. The most obvious source will be the file system, with the intention of having this evaluated at compile-time. We do not attempt to restrict the <code class="highlight"><span class="n">string_view</span></code> to a specific subset: whatever the implementation accepts (expected to be a file path), the implementation should use.</p>
    <h4 class="heading settled" data-level="4.3.1" id="design-goals-impldefn"><span class="secno">4.3.1. </span><span class="content">Implementation Defined</span><a class="self-link" href="#design-goals-impldefn"></a></h4>
-   <p>Calls such as <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_file.txt"</span> <span class="p">);</span></code> and <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"data.dll"</span> <span class="p">);</span></code> are meant to be evaluated in a <code class="highlight"><span class="k">constexpr</span></code> context, where the behavior is implementation-defined. The function has unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation will provide a failing diagnostic in these cases). This is similar to how include paths work, albeit <code class="highlight"><span class="cp">#include</span></code> interacts with the programmer through the preprocessor. There is, however, precedent for specifying library features that are implemented only through compile-time compiler intrinsics (<code class="highlight"><span class="n">type_traits</span></code>, <code class="highlight"><span class="n">source_location</span></code>, and similar utilities).</p>
+   <p>Calls such as <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_file.txt"</span> <span class="p">);</span></code>, <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"data.dll"</span> <span class="p">);</span></code>, and <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"vertices.bin"</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">none</span><span class="p">,</span> <span class="mi">8</span> <span class="p">);</span></code> are meant to be evaluated in a <code class="highlight"><span class="k">constexpr</span></code> context (with core constant expressions only), where the behavior is implementation-defined. The function has unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation will provide a failing diagnostic in these cases). This is similar to how include paths work, albeit <code class="highlight"><span class="cp">#include</span></code> interacts with the programmer through the preprocessor. There is, however, precedent for specifying library features that are implemented only through compile-time compiler intrinsics (<code class="highlight"><span class="n">type_traits</span></code>, <code class="highlight"><span class="n">source_location</span></code>, and similar utilities).</p>
    <p>Core -- for other proposals such as <a data-link-type="biblio" href="#biblio-p0466r1">p0466r1 - Layout-compatibility and Pointer-interconvertibility Traits </a> -- indicated their preference in using a <code class="highlight"><span class="k">constexpr</span></code> magic function implemented by intrinsic in the standard library over some form of <code class="highlight"><span class="k">template</span> <span class="o">&lt;</span><span class="k">auto</span> <span class="n">X</span><span class="o">></span> <span class="n">thing</span> <span class="p">{</span> <span class="cm">/* implementation specified */</span> <span class="n">value</span><span class="p">;</span> <span class="p">};</span></code> construct. However, it is important to note that <a data-link-type="biblio" href="#biblio-p0466r1">[p0466r1]</a> proposes type traits, where as this has entirely different functionality, and so its reception and opinions may be different.</p>
    <p>As <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> is meant to exist at compile-time only, it may be prudent to rely on <a data-link-type="biblio" href="#biblio-p1073r0">p1073r0 - constexpr! functions</a>. However, these are only design decisions to more clearly express the intent of the paper. This paper does not explicitly rely on <a data-link-type="biblio" href="#biblio-p1073r0">[p1073r0]</a> at this time.</p>
    <h4 class="heading settled" data-level="4.3.2" id="design-goals-binary"><span class="secno">4.3.2. </span><span class="content">Binary Only</span><a class="self-link" href="#design-goals-binary"></a></h4>
    <p>Creating two separate forms or options for loading data that is meant to be a "string" always fuels controversy and debate about what the resulting contents should be. The problem is sidestepped entirely by demanding that the resource loaded by <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> represents the bytes exactly as they come from the resource, modulo any options passed to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code>. This prevents encoding confusion, conversion issues, and other pitfalls related to trying to match the user’s idea of "string" data or non-binary formats. Data is received exactly as it is on the machine, whether it is a supposed text file or otherwise. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_text_file.txt"</span> <span class="p">)</span></code> and <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_binary_file.bin"</span> <span class="p">)</span></code> behave exactly the same concerning their treatment of the resource.</p>
-   <h4 class="heading settled" data-level="4.3.3" id="design-goals-null"><span class="secno">4.3.3. </span><span class="content">Opt-in, Optional Null Termination</span><a class="self-link" href="#design-goals-null"></a></h4>
+   <h4 class="heading settled" data-level="4.3.3" id="design-goals-null"><span class="secno">4.3.3. </span><span class="content">Opt-in and Optional Null Termination</span><a class="self-link" href="#design-goals-null"></a></h4>
    <p>With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span></code> is <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>. If this option is specified, then the data is null terminated:</p>
 <pre class="highlight"><span class="cp">#include</span> &lt;embed><span class="cp"></span>
 <span class="cp"></span>
 <span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
-  <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">data</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span><span class="s">"my_file.txt"</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span><span class="p">);</span>
-  <span class="k">static_assert</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()]</span> <span class="o">==</span> <span class="sc">'\0'</span><span class="p">);</span>
+  <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">data</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_file.txt"</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span> <span class="p">);</span>
+  <span class="k">static_assert</span><span class="p">(</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()]</span> <span class="o">==</span> <span class="sc">'\0'</span> <span class="p">);</span>
   <span class="c1">// use as desired, potentially with system calls and graphics APIs...</span>
 <span class="c1"></span>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre>
-   <h4 class="heading settled" data-level="4.3.4" id="design-goals-options"><span class="secno">4.3.4. </span><span class="content">Options</span><a class="self-link" href="#design-goals-options"></a></h4>
+   <h4 class="heading settled" data-level="4.3.4" id="design-goals-align"><span class="secno">4.3.4. </span><span class="content">Opt-in Alignment</span><a class="self-link" href="#design-goals-align"></a></h4>
+   <p>It is important that the data that is loaded respect the alignment of the target (abstract) machine. This is why we present an integer argument to handle such a thing as the last argument to embed:</p>
+<pre class="highlight"><span class="cp">#include</span> &lt;embed><span class="cp"></span>
+<span class="cp"></span>
+<span class="k">alignas</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span> <span class="k">struct</span> <span class="n">vec4</span> <span class="p">{</span>
+  <span class="kt">float</span> <span class="n">elements</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">float_data</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_floats.bin"</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">none</span><span class="p">,</span> <span class="k">alignof</span><span class="p">(</span><span class="n">vec4</span><span class="p">)</span> <span class="p">);</span>
+  <span class="c1">// use as desired</span>
+<span class="c1"></span>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre>
+   <h4 class="heading settled" data-level="4.3.5" id="design-goals-options"><span class="secno">4.3.5. </span><span class="content">Options</span><a class="self-link" href="#design-goals-options"></a></h4>
    <p>Similar to the above, <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code>'s base behavior can be extended using options. This allows for simple needs that come up in the future or that are missed due to oversight to be corrected for. Currently, the only option flag is for <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>, but there might be future flags that do things like e.g. force the data to be baked into a specific section of the binary. Having such flags be standardized means that compiler vendors would have to agree about said flags and their specification before shipping: this is <em>not the place for vendors to place their own implementation-specific flags</em> (the goal is to reduce fragmentation, not encourage it).</p>
-   <h4 class="heading settled" data-level="4.3.5" id="design-goals-constexpr"><span class="secno">4.3.5. </span><span class="content">Constexpr Compatibility</span><a class="self-link" href="#design-goals-constexpr"></a></h4>
+   <h4 class="heading settled" data-level="4.3.6" id="design-goals-constexpr"><span class="secno">4.3.6. </span><span class="content">Constexpr Compatibility</span><a class="self-link" href="#design-goals-constexpr"></a></h4>
    <p>The entire implementation must be usable in a <code class="highlight"><span class="k">constexpr</span></code> context. It is not just for the purposes of processing the data at compile time, but because it matches existing implementations that store strings and huge array literals into a variable via <code class="highlight"><span class="cp">#include</span></code>. These variables can be <code class="highlight"><span class="k">constexpr</span></code>: to not have a constexpr implementation is to leave many of the programmers who utilize this behavior out in the cold, and change their expectations.</p>
    <h2 class="heading settled" data-level="5" id="help"><span class="secno">5. </span><span class="content">Help Requested</span><a class="self-link" href="#help"></a></h2>
    <p>The author of this proposal is extremely new to writing standardese. While the author has read other papers and consumed the standard, there is a definite need for help and any guidance and direction is certainly welcome. The author expects that this paper may undergo several revisions and undertake quite a few moments of "bikeshedding".</p>
@@ -1661,17 +1711,21 @@ pre .property::before, pre .property::after {
    <h4 class="heading settled" data-level="5.2.1" id="help-bikeshed-open"><span class="secno">5.2.1. </span><span class="content">Open Questions</span><a class="self-link" href="#help-bikeshed-open"></a></h4>
    <ol>
     <li data-md="">
-     <p>Is a magic library function in a header the most desirable? Other proposals have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.</p>
+     <p>Is a magic library function in a header the most desirable? Other proposals for other avenies have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.</p>
     <li data-md="">
-     <p>Should the return <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> be const-qualified, as in <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code>?</p>
+     <p>Is <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code> in <code class="highlight"><span class="k">constexpr</span></code> format better as a return value (i.e., do we depend on Louis Dionne, Roger Orr, and Daveed Vandevoorde’s work in <a data-link-type="biblio" href="#biblio-p0784r3">[p0784r3]</a>, <a data-link-type="biblio" href="#biblio-p1002r0">[p1002r0]</a>, <a data-link-type="biblio" href="#biblio-p1004r0">[p1004r0]</a> and <a data-link-type="biblio" href="#biblio-p1023r0">[p1023r0]</a>)?</p>
    </ol>
    <h4 class="heading settled" data-level="5.2.2" id="help-bikeshed-answered"><span class="secno">5.2.2. </span><span class="content">Answered Questions</span><a class="self-link" href="#help-bikeshed-answered"></a></h4>
    <p>Question: Should <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embedded</span></code> (<a data-link-type="biblio" href="#biblio-p1040r0">std::embed revision 0</a>) just be replaced with <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code>?</p>
-   <p>Answer: Yes. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> covers all of the use cases here, is <code class="highlight"><span class="k">constexpr</span></code>, and makes the most sense.</p>
+   <p>Answer: Yes. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> covers all of the use cases here, is <code class="highlight"><span class="k">constexpr</span></code>, and makes the most sense. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">byte</span><span class="p">,</span> <span class="n">N</span><span class="o">></span></code> cannot be returned because <code class="highlight"><span class="n">N</span></code> cannot be used until it is deduced. (LEWG confirmed.)</p>
+   <p>Question: Should the return <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> be const-qualified, as in <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code>?</p>
+   <p>Answer: Yes. (LEWG confirmed.)</p>
    <p>Question: <em>What is the lookup scheme for files and other resources?</em></p>
-   <p>Answer: Implementation defined. We expect compilers to expose an option similar to <code class="highlight"><span class="o">--</span><span class="n">embed</span><span class="o">-</span><span class="n">paths</span><span class="o">=</span><span class="p">...</span></code>, <code class="highlight"><span class="o">/</span><span class="nl">EMBEDPATH</span><span class="p">:...</span></code>, or whatever tickles the implementer’s fancy.</p>
+   <p>Answer: Implementation defined. We expect compilers to expose an option similar to <code class="highlight"><span class="o">--</span><span class="n">embed</span><span class="o">-</span><span class="n">paths</span><span class="o">=</span><span class="p">...</span></code>, <code class="highlight"><span class="o">/</span><span class="nl">EMBEDPATH</span><span class="p">:...</span></code>, or whatever tickles the implementer’s fancy. (LEWG confirmed.)</p>
    <p>Question: <em>Pulling in large data files on every compile might be expensive?</em></p>
    <p>Answer: We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a frequent problem past the first compilation.</p>
+   <p>Question: <em>Is this more suitable for WG14 (the standards C committee) rather than WG21 (the standards C++ committee)?</em></p>
+   <p>Answer: We do not think that the C standards committee will be the best place for some feature of this variety. All of the typical solutions that work in C were rejected previously (preprocessor or special literal). Indication has shown that the C standards committee might be able to support this idea and come up with a better design than WG21 or provide more fine-grained mechanisms for it, but there is no evidence that they are either interested or have the time.</p>
    <h2 class="heading settled" data-level="6" id="synopsis"><span class="secno">6. </span><span class="content">Header Overview</span><a class="self-link" href="#synopsis"></a></h2>
    <p><code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code> Overview</p>
 <pre class="highlight"><span class="k">namespace</span> <span class="n">std</span> <span class="p">{</span>
@@ -1697,18 +1751,21 @@ pre .property::before, pre .property::after {
    </ol>
 <pre class="highlight"><span class="cp">#include</span> &lt;string_view> // for std::string_view<span class="cp"></span>
 <span class="cp">#include</span> &lt;span> // for std::span<span class="cp"></span>
-<span class="cp">#include</span> &lt;cstddef> // for std::byte, std::size_t, std::ptrdiff_t...<span class="cp"></span>
+<span class="cp">#include</span> &lt;cstddef> // for std::byte, std::size_t<span class="cp"></span>
 <span class="cp"></span>
 <span class="k">namespace</span> <span class="n">std</span> <span class="p">{</span>
-  <span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> 
+  <span class="k">constexpr</span> <span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">byte</span><span class="o">></span> <span class="n">embed</span><span class="p">(</span> 
     <span class="n">string_view</span> <span class="n">resource_identifier</span><span class="p">,</span> 
-    <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span> 
+    <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span><span class="p">,</span> 
+    <span class="kt">size_t</span> <span class="n">alignment</span> <span class="o">=</span> <span class="k">alignof</span><span class="p">(</span><span class="n">byte</span><span class="p">)</span>
   <span class="p">);</span>
 <span class="p">}</span> <span class="c1">// namespace std</span>
 </pre>
    <ol>
     <li data-md="">
      <p>The implementation defines what strings it accepts for <code class="highlight"><span class="n">resource_identifier</span></code>. [ Note -- It is the hope that compiler vendors will provide a mechanism similar to include paths for finding things on the local filesystem. -- End Note]</p>
+    <li data-md="">
+     <p>If the function succeeds, then the bytes visible are aligned to the boundary specified by the</p>
     <li data-md="">
      <p>If this function is called at runtime, then the behavior is unspecified.</p>
    </ol>
@@ -1960,6 +2017,14 @@ pre .property::before, pre .property::after {
    <dd>Andrew Tomazos. <a href="https://wg21.link/p0373r0">Proposal of File Literals</a>. 21 May 2016. URL: <a href="https://wg21.link/p0373r0">https://wg21.link/p0373r0</a>
    <dt id="biblio-p0466r1">[P0466R1]
    <dd>Lisa Lippincott. <a href="https://wg21.link/p0466r1">Layout-compatibility and Pointer-interconvertibility Traits</a>. URL: <a href="https://wg21.link/p0466r1">https://wg21.link/p0466r1</a>
+   <dt id="biblio-p0784r3">[P0784R3]
+   <dd>Louis Dionne; et al. <a href="https://wg21.link/p1073r0">constexpr! functions</a>. May 5th, 2018. P. URL: <a href="https://wg21.link/p1073r0">https://wg21.link/p1073r0</a>
+   <dt id="biblio-p1002r0">[P1002R0]
+   <dd>Louis Dionne. <a href="https://wg21.link/p1002r0">try-catch blocks in constexpr functions</a>. May 5th, 2018. P. URL: <a href="https://wg21.link/p1002r0">https://wg21.link/p1002r0</a>
+   <dt id="biblio-p1004r0">[P1004R0]
+   <dd>Louis Dionne; Daveed Vandevoorde. <a href="https://wg21.link/p1004r0">Making std::vector constexpr</a>. May 5th, 2018. P. URL: <a href="https://wg21.link/p1004r0">https://wg21.link/p1004r0</a>
+   <dt id="biblio-p1023r0">[P1023R0]
+   <dd>Roger Orr. <a href="https://wg21.link/p1023r0">constexpr comparison operators for std::array</a>. May 5th, 2018. P. URL: <a href="https://wg21.link/p1023r0">https://wg21.link/p1023r0</a>
    <dt id="biblio-p1040r0">[P1040R0]
    <dd>JeanHeyd Meneide. <a href="https://wg21.link/p1040r0">std::embed</a>. May 5th, 2018. P. URL: <a href="https://wg21.link/p1040r0">https://wg21.link/p1040r0</a>
    <dt id="biblio-p1073r0">[P1073R0]

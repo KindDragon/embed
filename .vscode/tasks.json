@@ -8,8 +8,8 @@
 			"args": [
 				"--print=plain",
 				"spec",
-				"${workspaceFolder}/papers/source/P1040 - embed.bs",
-				"${workspaceFolder}/papers/P1040 - embed.html",
+				"${workspaceFolder}/papers/source/d1040 - embed.bs",
+				"${workspaceFolder}/papers/d1040 - embed.html",
 			],
 			"group": {
 				"kind": "build",

@@ -7,7 +7,7 @@ Status: P
 Group: WG21
 URL: 
 !Source: <a href="https://github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/P1040 - embed.bs</a>
-!Current: <a href="https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/P1040 - embed.html</a>
+!Current: <a href="https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html</a>
 Editor: JeanHeyd Meneide
 Abstract: Accessing program-external resources at compile-time and making them available to the developer.
 Date: 2018-05-19
@@ -24,6 +24,8 @@ This paper introduces a function `std::embed` in the `<embed>` header for pullin
     
 	Add more code demonstrating the old way and motivating examples.
 
+	Incorporate LEWG feedback, particularly alignment requirements illuminated by Odin Holmes and Niall Douglass and the need for a feature macro on top of having `__has_include( <embed> )`.
+
 - r0
 
     Initial release.
@@ -35,9 +37,8 @@ Every C and C++ programmer -- at some point -- attempts to `#include` large chun
 - Financial Development
 	- representing coefficients and numeric constants for performance-critical algorithms;
 - Game Development
-	- assets that do not change at runtime
-	- Shader code
-	- Graphical assets, such as icons, fixed textures and other data;
+	- assets that do not change at runtime, such as icons, fixed textures and other data
+	- Shader and scripting code;
 - Embedded Development
 	- storing large chunks of binary, such as firmware, in a well-compressed format
 	- placing data in memory on chips and systems that do not have an operating system or file system;
@@ -58,18 +59,18 @@ This paper proposes `<embed>` to make this process much more efficient, portable
 #include <embed>
 
 int main (int, char*[]) {
-	constexpr std::span<std::byte> fxaa_binary = std::embed("fxaa.spirv");
+	constexpr std::span<const std::byte> fxaa_binary = std::embed( "fxaa.spirv" );
 	
 	// assert this is a SPIRV file, compile-time	
-	static_assert(fxaa_binary[0] == 0x03 && fxaa_binary[1] == 0x02
+	static_assert( fxaa_binary[0] == 0x03 && fxaa_binary[1] == 0x02
 		&& fxaa_binary[2] == 0x23 && fxaa_binary[3] == 0x07
-		, "given wrong SPIRV data, check rebuild or check the binaries!")
+		, "given wrong SPIRV data, check rebuild or check the binaries!" )
 
 	auto context = make_vulkan_context();
 
 	// data kept around and made available for binary
 	// to use at runtime
-	auto fxaa_shader = make_shader(context, fxaa_binary);
+	auto fxaa_shader = make_shader( context, fxaa_binary );
 
 	for (;;) {
 		// ...
@@ -83,7 +84,7 @@ int main (int, char*[]) {
 
 # Scope and Impact # {#scope}
 
-`constexpr span<byte> embed( string_view resource_identifier, embed_options options = embed_options::none )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics, builtins, or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is `<embed>`, making the feature entirely-opt-in and preprocessor-testable using `__has_include( <embed> )`.
+`constexpr span<byte> embed( string_view resource_identifier, embed_options options = embed_options::none, size_t alignment = alignof(byte) )` is an extension to the language proposed entirely as a library construct. The goal is to have it implemented with compiler intrinsics, builtins, or other suitable mechanisms. It does not affect the language. The proposed header to expose this functionality is `<embed>`, making the feature entirely-opt-in. It is preprocessor-testable using `__has_include( <embed> )`, and also exposes a feature macro when included called `__cpp_lib_embed`.
 
 # Design Decisions # {#design}
 
@@ -160,9 +161,10 @@ Because the proposal used a string literal, several questions came up as to the 
 Because of the aforementioned reasons, it seems more prudent to take a "compiler intrinsic"/"magic function" approach. The function takes the form:
 
 <xmp>
-constexpr span<byte> embed( 
+constexpr span<const byte> embed( 
 	string_view resource_identifier, 
-	embed_options options = embed_options::none
+	embed_options options = embed_options::none, 
+	size_t alignment = alignof(byte)
 );
 </xmp>
 
@@ -170,7 +172,7 @@ constexpr span<byte> embed(
 
 ### Implementation Defined ### {#design-goals-impldefn}
 
-Calls such as `std::embed( "my_file.txt" );` and `std::embed( "data.dll" );` are meant to be evaluated in a `constexpr` context, where the behavior is implementation-defined. The function has unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation will provide a failing diagnostic in these cases). This is similar to how include paths work, albeit `#include` interacts with the programmer through the preprocessor. There is, however, precedent for specifying library features that are implemented only through compile-time compiler intrinsics (`type_traits`, `source_location`, and similar utilities).
+Calls such as `std::embed( "my_file.txt" );`, `std::embed( "data.dll" );`, and `std::embed( "vertices.bin", std::embed_options::none, 8 );` are meant to be evaluated in a `constexpr` context (with core constant expressions only), where the behavior is implementation-defined. The function has unspecified behavior when evaluated in a non-constexpr context (with the expectation that the implementation will provide a failing diagnostic in these cases). This is similar to how include paths work, albeit `#include` interacts with the programmer through the preprocessor. There is, however, precedent for specifying library features that are implemented only through compile-time compiler intrinsics (`type_traits`, `source_location`, and similar utilities).
 
 Core -- for other proposals such as [[p0466r1|p0466r1 - Layout-compatibility and Pointer-interconvertibility Traits ]] -- indicated their preference in using a `constexpr` magic function implemented by intrinsic in the standard library over some form of `template <auto X> thing { /* implementation specified */ value; };` construct. However, it is important to note that [[p0466r1]] proposes type traits, where as this has entirely different functionality, and so its reception and opinions may be different.
 
@@ -180,7 +182,7 @@ As `std::embed` is meant to exist at compile-time only, it may be prudent to rel
 
 Creating two separate forms or options for loading data that is meant to be a "string" always fuels controversy and debate about what the resulting contents should be. The problem is sidestepped entirely by demanding that the resource loaded by `std::embed` represents the bytes exactly as they come from the resource, modulo any options passed to `std::embed`. This prevents encoding confusion, conversion issues, and other pitfalls related to trying to match the user's idea of "string" data or non-binary formats. Data is received exactly as it is on the machine, whether it is a supposed text file or otherwise. `std::embed( "my_text_file.txt" )` and `std::embed( "my_binary_file.bin" )` behave exactly the same concerning their treatment of the resource.
 
-### Opt-in, Optional Null Termination ### {#design-goals-null}
+### Opt-in and Optional Null Termination ### {#design-goals-null}
 
 With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of `std::embed_options` is `std::embed_options::null_terminate`. If this option is specified, then the data is null terminated:
 
@@ -188,9 +190,27 @@ With the Binary Only stipulation, some users will feel left out as there are man
 #include <embed>
 
 int main () {
-	constexpr auto data = std::embed("my_file.txt", std::embed_options::null_terminate);
-	static_assert(data[data.size()] == '\0');
+	constexpr auto data = std::embed( "my_file.txt", std::embed_options::null_terminate );
+	static_assert( data[data.size()] == '\0' );
 	// use as desired, potentially with system calls and graphics APIs...
+	return 0;
+}
+</xmp>
+
+### Opt-in Alignment ### {#design-goals-align}
+
+It is important that the data that is loaded respect the alignment of the target (abstract) machine. This is why we present an integer argument to handle such a thing as the last argument to embed:
+
+<xmp>
+#include <embed>
+
+alignas(16) struct vec4 {
+	float elements[4];
+};
+
+int main () {
+	constexpr auto float_data = std::embed( "my_floats.bin", std::embed_options::none, alignof(vec4) );
+	// use as desired
 	return 0;
 }
 </xmp>
@@ -215,23 +235,31 @@ The author has consulted dozens of C++ users in each of the Text Processing, Vid
 
 ### Open Questions ### {#help-bikeshed-open}
 
-1. Is a magic library function in a header the most desirable? Other proposals have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.
+1. Is a magic library function in a header the most desirable? Other proposals for other avenies have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.
 
-2. Should the return `std::span` be const-qualified, as in `std::span<const std::byte>`?
+2. Is `std::vector<std::byte>` in `constexpr` format better as a return value (i.e., do we depend on Louis Dionne, Roger Orr, and Daveed Vandevoorde's work in [[p0784r3]], [[p1002r0]], [[p1004r0]] and [[p1023r0]])?
 
 ### Answered Questions ### {#help-bikeshed-answered}
 
 Question: Should `std::embedded` ([[p1040r0|std::embed revision 0]]) just be replaced with `std::span`?
 
-Answer: Yes. `std::span` covers all of the use cases here, is `constexpr`, and makes the most sense.
+Answer: Yes. `std::span` covers all of the use cases here, is `constexpr`, and makes the most sense. `std::array<const byte, N>` cannot be returned because `N` cannot be used until it is deduced. (LEWG confirmed.)
+
+Question: Should the return `std::span` be const-qualified, as in `std::span<const std::byte>`?
+
+Answer: Yes. (LEWG confirmed.)
 
 Question: *What is the lookup scheme for files and other resources?*
 
-Answer: Implementation defined. We expect compilers to expose an option similar to `--embed-paths=...`, `/EMBEDPATH:...`, or whatever tickles the implementer's fancy.
+Answer: Implementation defined. We expect compilers to expose an option similar to `--embed-paths=...`, `/EMBEDPATH:...`, or whatever tickles the implementer's fancy. (LEWG confirmed.)
 
 Question: *Pulling in large data files on every compile might be expensive?*
 
 Answer: We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a frequent problem past the first compilation.
+
+Question: *Is this more suitable for WG14 (the standards C committee) rather than WG21 (the standards C++ committee)?*
+
+Answer: We do not think that the C standards committee will be the best place for some feature of this variety. All of the typical solutions that work in C were rejected previously (preprocessor or special literal). Indication has shown that the C standards committee might be able to support this idea and come up with a better design than WG21 or provide more fine-grained mechanisms for it, but there is no evidence that they are either interested or have the time.
 
 # Header Overview # {#synopsis}
 
@@ -261,19 +289,22 @@ namespace std {
 <xmp>
 #include <string_view> // for std::string_view
 #include <span> // for std::span
-#include <cstddef> // for std::byte, std::size_t, std::ptrdiff_t...
+#include <cstddef> // for std::byte, std::size_t
 
 namespace std {
-	constexpr span<std::byte> embed( 
+	constexpr span<const byte> embed( 
 		string_view resource_identifier, 
-		embed_options options = embed_options::none 
+		embed_options options = embed_options::none, 
+		size_t alignment = alignof(byte)
 	);
 } // namespace std
 </xmp>
 
 1. The implementation defines what strings it accepts for `resource_identifier`. [ Note -- It is the hope that compiler vendors will provide a mechanism similar to include paths for finding things on the local filesystem. -- End Note]
 
-2. If this function is called at runtime, then the behavior is unspecified.
+2. If the function succeeds, then the bytes visible are aligned to the boundary specified by the 
+
+3. If this function is called at runtime, then the behavior is unspecified.
 
 # Appendix # {#appendix}
 
@@ -437,6 +468,19 @@ For all this hard work, it is the author's hope to carry this into C++. It would
 		"publisher": "WG21",
 		"date": "May 5th, 2018"
 	},
+	"p0784r3": {
+		"authors": [
+			"Louis Dionne", 
+			"Richard Smith", 
+			"Nina Ranns", 
+			"Daveed Vandevoorde"
+		],
+		"href": "https://wg21.link/p1073r0",
+		"title": "constexpr! functions",
+		"status": "P",
+		"publisher": "WG21",
+		"date": "May 5th, 2018"
+	},
 	"p1040r0": {
 		"authors": [
 			"JeanHeyd Meneide"
@@ -446,6 +490,40 @@ For all this hard work, it is the author's hope to carry this into C++. It would
 		"status": "P",
 		"publisher": "WG21",
 		"date": "May 5th, 2018"
+	},
+	"p1002r0": {
+		"authors": [
+			"Louis Dionne"
+		],
+		"href": "https://wg21.link/p1002r0",
+		"title": "try-catch blocks in constexpr functions",
+		"status": "P",
+		"publisher": "WG21",
+		"date": "May 5th, 2018"
+		
+	},
+	"p1004r0": {
+		"authors": [
+			"Louis Dionne", 
+			"Daveed Vandevoorde"
+		],
+		"href": "https://wg21.link/p1004r0",
+		"title": "Making std::vector constexpr",
+		"status": "P",
+		"publisher": "WG21",
+		"date": "May 5th, 2018"
+		
+	},
+	"p1023r0": {
+		"authors": [
+			"Roger Orr"
+		],
+		"href": "https://wg21.link/p1023r0",
+		"title": "constexpr comparison operators for std::array",
+		"status": "P",
+		"publisher": "WG21",
+		"date": "May 5th, 2018"
+		
 	}
 }
 </pre>
