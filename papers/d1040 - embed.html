@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>d1040Rr1-beta: std::embed</title>
+  <title>d1040R1: std::embed</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1227,7 +1227,7 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 60c7cf64c0efdd39a8c0261dfad14adb1da62902" name="generator">
-  <meta content="954cc17f8c797dbe5729de45d184bc57626e5cba" name="document-revision">
+  <meta content="ccade4199ed17851762caba9f854ddecfac527e6" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1436,8 +1436,8 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">d1040Rr1-beta<br>std::embed</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2018-05-19">19 May 2018</time></span></h2>
+   <h1 class="p-name no-ref" id="title">d1040R1<br>std::embed</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2018-06-06">6 June 2018</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Author:
@@ -1451,6 +1451,8 @@ pre .property::before, pre .property::after {
      <dd><a href="https://github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs</a>
      <dt>Current:
      <dd><a href="https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html</a>
+     <dt>WIP Implementation:
+     <dd><a href="https://github.com/ThePhD/embed-implementation">https://github.com/ThePhD/embed-implementation</a>
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -1458,7 +1460,7 @@ pre .property::before, pre .property::after {
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>Accessing program-external resources at compile-time and making them available to the developer.</p>
+   <p>Accessing external resources at compile-time and making them available to the language and user.</p>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
@@ -1678,7 +1680,7 @@ pre .property::before, pre .property::after {
    <h4 class="heading settled" data-level="4.3.2" id="design-goals-binary"><span class="secno">4.3.2. </span><span class="content">Binary Only</span><a class="self-link" href="#design-goals-binary"></a></h4>
    <p>Creating two separate forms or options for loading data that is meant to be a "string" always fuels controversy and debate about what the resulting contents should be. The problem is sidestepped entirely by demanding that the resource loaded by <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> represents the bytes exactly as they come from the resource, modulo any options passed to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code>. This prevents encoding confusion, conversion issues, and other pitfalls related to trying to match the user’s idea of "string" data or non-binary formats. Data is received exactly as it is from the resource as defined by the implementation, whether it is a supposed text file or otherwise. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_text_file.txt"</span> <span class="p">)</span></code> and <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span><span class="p">(</span> <span class="s">"my_binary_file.bin"</span> <span class="p">)</span></code> behave exactly the same concerning their treatment of the resource.</p>
    <h4 class="heading settled" data-level="4.3.3" id="design-goals-null"><span class="secno">4.3.3. </span><span class="content">Opt-in and Optional Null Termination</span><a class="self-link" href="#design-goals-null"></a></h4>
-   <p>With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span></code> is <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>. If this option is specified, then the data is null terminated:</p>
+   <p>With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence similar to a string. Therefore, one of the options of <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span></code> is <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>. If this option is specified, then the data returned is null terminated, even if the resource itself exists but is empty:</p>
 <pre class="highlight"><span class="cp">#include</span> &lt;embed><span class="cp"></span>
 <span class="cp"></span>
 <span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>

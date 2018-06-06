@@ -1,16 +1,19 @@
 <pre class='metadata'>
 Title: std::embed
 Shortname: D1040
-Revision: r1-beta
+Revision: 1
+H1: D1040R1 - std::embed
 Audience: EWG, LEWG, SG15
 Status: P
 Group: WG21
 URL: 
 !Source: <a href="https://github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs</a>
 !Current: <a href="https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html</a>
+!WIP Implementation: <a href="https://github.com/ThePhD/embed-implementation">https://github.com/ThePhD/embed-implementation</a>
+Repository: ThePhD/embed
 Editor: JeanHeyd Meneide
-Abstract: Accessing program-external resources at compile-time and making them available to the developer.
-Date: 2018-05-19
+Abstract: Accessing external resources at compile-time and making them available to the language and user.
+Date: 2018-06-06
 Markup Shorthands: markdown yes, biblio yes, markup yes
 </pre>
 
@@ -188,7 +191,7 @@ Creating two separate forms or options for loading data that is meant to be a "s
 
 ### Opt-in and Optional Null Termination ### {#design-goals-null}
 
-With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence. Therefore, one of the options of `std::embed_options` is `std::embed_options::null_terminate`. If this option is specified, then the data is null terminated:
+With the Binary Only stipulation, some users will feel left out as there are many system calls, source processing APIs, and other interfaces which require a null terminated sequence similar to a string. Therefore, one of the options of `std::embed_options` is `std::embed_options::null_terminate`. If this option is specified, then the data returned is null terminated, even if the resource itself exists but is empty:
 
 <xmp>
 #include <embed>
