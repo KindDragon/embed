@@ -437,7 +437,7 @@ A big thank you to Andrew Tomazos for replying to the author's e-mails about the
 
 A special thank you to Agustín Bergé for encouraging the author to talk to the creator of the Prior Art and getting started on this. Thank you to Tom Honermann for direction and insight on how to write a paper and apply for a proposal.
 
-Thank you to Arvid Gerstmann for helping me understand and use the link-time tools.
+Thank you to Arvid Gerstmann for helping the author understand and use the link-time tools.
 
 Thank you to Tony Van Eerd for valuable advice in improving the main text of this paper.
 
