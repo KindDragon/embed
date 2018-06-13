@@ -54,6 +54,8 @@ Every C and C++ programmer -- at some point -- attempts to `#include` large chun
 
 In the pursuit of this goal, these tools have proven to have inadequacies and contribute poorly to the C++ development cycle as it continues to scale up for larger and better low-end devices and high-performance machines, bogging developers down with menial build tasks and trying to cover-up disappointing differences between platforms.
 
+MongoDB has been kind enough to share some of their code [[#appendix-mongo|below]]. Other companies have had their example code anonymized or simply not included directly out of shame for the things they need to do to support their workflows. The author thanks MongoDB for their courage and their support for `std::embed`.
+
 The request for some form of `#include_string` or similar dates back quite a long time, with one of the oldest stack overflow questions asked-and-answered about it dating back nearly 10 years. Predating even that is a plethora of mailing list posts and forum posts asking how to get script code and other things that are not likely to change into the binary.
 
 This paper proposes `<embed>` to make this process much more efficient, portable, and streamlined. Here's an example of the ideal:
@@ -133,7 +135,7 @@ Furthermore, if the string literal is too big vendors such as VC++ will hard err
 
 ### Processing Tools ### {#design-practice-tools}
 
-Other developers use pre-processors for data that can't be easily hacked into a C++ source-code appropriate state (e.g., binary). The most popular one is `xxd -i my_data.bin`, which outputs an array in a file which developers then include. This is problematic because it turns binary data in C++ source. In many cases, this results in a larger file due to having to restructure the data to fit grammar requirements. It also results in needing an extra build step, which throws any programmer immediately at the mercy of build tools and project management. An example and further analysis can be found in the [[#appendix-tools]] section.
+Other developers use pre-processors for data that can't be easily hacked into a C++ source-code appropriate state (e.g., binary). The most popular one is `xxd -i my_data.bin`, which outputs an array in a file which developers then include. This is problematic because it turns binary data in C++ source. In many cases, this results in a larger file due to having to restructure the data to fit grammar requirements. It also results in needing an extra build step, which throws any programmer immediately at the mercy of build tools and project management. An example and further analysis can be found in the [[#appendix-tools]] and the [[#appendix-mongo]] section.
 
 ### `ld`, resource files, and other vendor-specific link-time tools ### {#design-practice-vendor}
 
@@ -374,6 +376,63 @@ There are problems with the `xxd -i` or similar tool-based approach. Lexing and 
 Binary data as C(++) arrays provide the overhead of having to comma-delimit every single byte present, it also requires that the compiler verify every entry in that array is a valid literal or entry according to the C++ language.
 
 This scales poorly with larger files, and build times suffer for any non-trivial binary file, especially when it scales into Megabytes in size (e.g., firmware and similar).
+
+### `python` Sadness ### {#appendix-mongo}
+
+Other companies are forced to create their own ad-hoc tools to embed data and files into their C++ code. MongoDB uses a [custom python script](https://github.com/mongodb/mongo/blob/master/site_scons/site_tools/jstoh.py), just to get their data into C++:
+
+<xmp>
+import os
+import sys
+
+def jsToHeader(target, source):
+    outFile = target
+    h = [
+        '#include "mongo/base/string_data.h"',
+        '#include "mongo/scripting/engine.h"',
+        'namespace mongo {',
+        'namespace JSFiles{',
+    ]
+    def lineToChars(s):
+        return ','.join(str(ord(c)) for c in (s.rstrip() + '\n')) + ','
+    for s in source:
+        filename = str(s)
+        objname = os.path.split(filename)[1].split('.')[0]
+        stringname = '_jscode_raw_' + objname
+
+        h.append('constexpr char ' + stringname + "[] = {")
+
+        with open(filename, 'r') as f:
+            for line in f:
+                h.append(lineToChars(line))
+
+        h.append("0};")
+        # symbols aren't exported w/o this
+        h.append('extern const JSFile %s;' % objname)
+        h.append('const JSFile %s = { "%s", StringData(%s, sizeof(%s) - 1) };' %
+                 (objname, filename.replace('\\', '/'), stringname, stringname))
+
+    h.append("} // namespace JSFiles")
+    h.append("} // namespace mongo")
+    h.append("")
+
+    text = '\n'.join(h)
+
+    with open(outFile, 'wb') as out:
+        try:
+            out.write(text)
+        finally:
+            out.close()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print "Must specify [target] [source] "
+        sys.exit(1)
+    jsToHeader(sys.argv[1], sys.argv[2:])
+</xmp>
+
+MongoDB were brave enough to share their code with me and make public the things they have to do: other companies have shared many similar concerns, but do not have the same bravery. We thank MongoDB for sharing.
 
 ### `ld` Sadness ### {#appendix-ld}
 
