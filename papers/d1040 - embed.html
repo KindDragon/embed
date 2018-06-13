@@ -1226,8 +1226,8 @@ Possible extra rowspan handling
       text-align: center;
     }
   </style>
-  <meta content="Bikeshed version 1a927b7d2ff9a70dcdc5dc9f892fd154b7b64097" name="generator">
-  <meta content="becf33a83f1aba02cb561d125056a1aa60ad4ebd" name="document-revision">
+  <meta content="Bikeshed version 60c7cf64c0efdd39a8c0261dfad14adb1da62902" name="generator">
+  <meta content="70a67300cd487243bc03ecaf7c6a51b8547305cb" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1451,7 +1451,7 @@ pre .property::before, pre .property::after {
      <dd><a href="https://github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs</a>
      <dt>Current:
      <dd><a href="https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html</a>
-     <dt>WIP Implementation:
+     <dt>Implementation:
      <dd><a href="https://github.com/ThePhD/embed-implementation">https://github.com/ThePhD/embed-implementation</a>
     </dl>
    </div>
@@ -1501,12 +1501,13 @@ pre .property::before, pre .property::after {
     <li>
      <a href="#help"><span class="secno">5</span> <span class="content">Help Requested</span></a>
      <ol class="toc">
-      <li><a href="#help-represent"><span class="secno">5.1</span> <span class="content">Feeling Underrepresented?</span></a>
+      <li><a href="#help-bikeshed"><span class="secno">5.1</span> <span class="content">Alternative Names</span></a>
+      <li><a href="#help-represent"><span class="secno">5.2</span> <span class="content">Feeling Underrepresented?</span></a>
       <li>
-       <a href="#help-bikshed"><span class="secno">5.2</span> <span class="content">Bikeshedding</span></a>
+       <a href="#help-bikshed"><span class="secno">5.3</span> <span class="content">Bikeshedding</span></a>
        <ol class="toc">
-        <li><a href="#help-bikeshed-open"><span class="secno">5.2.1</span> <span class="content">Open Questions</span></a>
-        <li><a href="#help-bikeshed-answered"><span class="secno">5.2.2</span> <span class="content">Answered Questions</span></a>
+        <li><a href="#help-bikeshed-open"><span class="secno">5.3.1</span> <span class="content">Open Questions</span></a>
+        <li><a href="#help-bikeshed-answered"><span class="secno">5.3.2</span> <span class="content">Answered Questions</span></a>
        </ol>
      </ol>
     <li><a href="#synopsis"><span class="secno">6</span> <span class="content">Header Overview</span></a>
@@ -1715,10 +1716,28 @@ pre .property::before, pre .property::after {
    <p>The desired feature macro for this is <code class="highlight"><span class="n">__cpp_lib_embed</span></code>.</p>
    <h2 class="heading settled" data-level="5" id="help"><span class="secno">5. </span><span class="content">Help Requested</span><a class="self-link" href="#help"></a></h2>
    <p>The author of this proposal is extremely new to writing standardese. While the author has read other papers and consumed the standard, there is a definite need for help and any guidance and direction is certainly welcome. The author expects that this paper may undergo several revisions and undertake quite a few moments of "bikeshedding".</p>
-   <h3 class="heading settled" data-level="5.1" id="help-represent"><span class="secno">5.1. </span><span class="content">Feeling Underrepresented?</span><a class="self-link" href="#help-represent"></a></h3>
+   <h3 class="heading settled" data-level="5.1" id="help-bikeshed"><span class="secno">5.1. </span><span class="content">Alternative Names</span><a class="self-link" href="#help-bikeshed"></a></h3>
+   <p>Some people feel that <code class="highlight"><span class="n">embed</span></code> is not a good name for this function. Therefore, here are some alternative names contribute by the community, in order of very good to very terrible:</p>
+   <ul>
+    <li data-md="">
+     <p><code class="highlight"><span class="n">embed</span></code></p>
+    <li data-md="">
+     <p><code class="highlight"><span class="n">embed_resource</span></code></p>
+    <li data-md="">
+     <p><code class="highlight"><span class="n">constexpr_read</span></code></p>
+    <li data-md="">
+     <p><code class="highlight"><span class="n">static_read</span></code></p>
+    <li data-md="">
+     <p><code class="highlight"><span class="n">static_resource</span></code></p>
+    <li data-md="">
+     <p><code class="highlight"><span class="n">static_include</span></code></p>
+    <li data-md="">
+     <p><code class="highlight"><span class="n">cfsread</span></code></p>
+   </ul>
+   <h3 class="heading settled" data-level="5.2" id="help-represent"><span class="secno">5.2. </span><span class="content">Feeling Underrepresented?</span><a class="self-link" href="#help-represent"></a></h3>
    <p>The author has consulted dozens of C++ users in each of the Text Processing, Video Game, Financial, Server, Embedded and Desktop Application development subspaces. The author has also queried the opinions of Academia. The author feels this paper adequately covers many use cases, existing practice and prior art. If there is a use case or a problem not being adequately addressed by this proposal, the author encourages anyone and everyone to reach out to have their voice heard.</p>
-   <h3 class="heading settled" data-level="5.2" id="help-bikshed"><span class="secno">5.2. </span><span class="content">Bikeshedding</span><a class="self-link" href="#help-bikshed"></a></h3>
-   <h4 class="heading settled" data-level="5.2.1" id="help-bikeshed-open"><span class="secno">5.2.1. </span><span class="content">Open Questions</span><a class="self-link" href="#help-bikeshed-open"></a></h4>
+   <h3 class="heading settled" data-level="5.3" id="help-bikshed"><span class="secno">5.3. </span><span class="content">Bikeshedding</span><a class="self-link" href="#help-bikshed"></a></h3>
+   <h4 class="heading settled" data-level="5.3.1" id="help-bikeshed-open"><span class="secno">5.3.1. </span><span class="content">Open Questions</span><a class="self-link" href="#help-bikeshed-open"></a></h4>
    <ol>
     <li data-md="">
      <p>Is a magic library function in a header the most desirable? Other proposals for other avenies have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.</p>
@@ -1726,7 +1745,7 @@ pre .property::before, pre .property::after {
      <p>Is <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code> in <code class="highlight"><span class="k">constexpr</span></code> format better as a return value (i.e., do we depend on Louis Dionne, Roger Orr, and Daveed Vandevoorde’s work in <a data-link-type="biblio" href="#biblio-p0784r3">[p0784r3]</a>, <a data-link-type="biblio" href="#biblio-p1002r0">[p1002r0]</a>, <a data-link-type="biblio" href="#biblio-p1004r0">[p1004r0]</a> and <a data-link-type="biblio" href="#biblio-p1023r0">[p1023r0]</a>)?</p>
    </ol>
    <p>Tentative Answer: not really, but can be persuaded otherwise. Do not want to lock this feature down as a dependency to these other types.</p>
-   <h4 class="heading settled" data-level="5.2.2" id="help-bikeshed-answered"><span class="secno">5.2.2. </span><span class="content">Answered Questions</span><a class="self-link" href="#help-bikeshed-answered"></a></h4>
+   <h4 class="heading settled" data-level="5.3.2" id="help-bikeshed-answered"><span class="secno">5.3.2. </span><span class="content">Answered Questions</span><a class="self-link" href="#help-bikeshed-answered"></a></h4>
    <p>Question: Should <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embedded</span></code> (<a data-link-type="biblio" href="#biblio-p1040r0">std::embed revision 0</a>) just be replaced with <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code>?</p>
    <p>Answer: Yes. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> covers all of the use cases here, is <code class="highlight"><span class="k">constexpr</span></code>, and makes the most sense. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">byte</span><span class="p">,</span> <span class="n">N</span><span class="o">></span></code> cannot be returned because <code class="highlight"><span class="n">N</span></code> cannot be named until it is deduced by the actual value being returned. It is a poor interface to force the user to always <code class="highlight"><span class="k">decltype</span></code> the return. (LEWG confirmed.)</p>
    <p>Question: Should the return <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> be const-qualified, as in <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code>?</p>

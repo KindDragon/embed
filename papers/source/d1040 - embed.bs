@@ -9,7 +9,7 @@ Group: WG21
 URL: 
 !Source: <a href="https://github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs">github.com/ThePhD/embed/blob/master/papers/source/d1040 - embed.bs</a>
 !Current: <a href="https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html">https://rawgit.com/ThePhD/embed/master/papers/d1040 - embed.html</a>
-!WIP Implementation: <a href="https://github.com/ThePhD/embed-implementation">https://github.com/ThePhD/embed-implementation</a>
+!Implementation: <a href="https://github.com/ThePhD/embed-implementation">https://github.com/ThePhD/embed-implementation</a>
 Repository: ThePhD/embed
 Editor: JeanHeyd Meneide
 Abstract: Accessing external resources at compile-time and making them available to the language and user.
@@ -240,6 +240,18 @@ The desired feature macro for this is `__cpp_lib_embed`.
 # Help Requested # {#help}
 
 The author of this proposal is extremely new to writing standardese. While the author has read other papers and consumed the standard, there is a definite need for help and any guidance and direction is certainly welcome. The author expects that this paper may undergo several revisions and undertake quite a few moments of "bikeshedding".
+
+## Alternative Names ## {#help-bikeshed}
+
+Some people feel that `embed` is not a good name for this function. Therefore, here are some alternative names contribute by the community, in order of very good to very terrible:
+
+- `embed`
+- `embed_resource`
+- `constexpr_read`
+- `static_read`
+- `static_resource`
+- `static_include`
+- `cfsread`
 
 ## Feeling Underrepresented? ## {#help-represent}
 
