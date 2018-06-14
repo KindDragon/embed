@@ -1,8 +1,7 @@
 <pre class='metadata'>
 Title: std::embed
 Shortname: P1040
-Revision: 1
-H1: D1040R2 - std::embed
+Revision: 2
 Audience: EWG, LEWG, SG15
 Status: P
 Group: WG21
