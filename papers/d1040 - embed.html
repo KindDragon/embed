@@ -1227,7 +1227,7 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 60c7cf64c0efdd39a8c0261dfad14adb1da62902" name="generator">
-  <meta content="4c4e3e91072c45d04d0812cbbfeee4d0e28a6ab1" name="document-revision">
+  <meta content="0b8bd05438f2a5db1ccb348448e262e76def91d2" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1539,10 +1539,8 @@ pre .property::before, pre .property::after {
    <h2 class="heading settled" data-level="1" id="changelog"><span class="secno">1. </span><span class="content">Revision History</span><a class="self-link" href="#changelog"></a></h2>
    <ul>
     <li data-md="">
-     <p>r2</p>
-     <p>Create future directions section.</p>
-    <li data-md="">
      <p>r1</p>
+     <p>Create future directions section.</p>
      <p>Change <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminated</span></code> to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>.</p>
      <p>Add more code demonstrating the old way and motivating examples.</p>
      <p>Incorporate LEWG feedback, particularly alignment requirements illuminated by Odin Holmes and Niall Douglass. Add a feature macro on top of having <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>.</p>
@@ -1835,7 +1833,7 @@ pre .property::before, pre .property::after {
 <span class="p">);</span>
 </pre>
    <p>This would supply the data and view it as a type <code class="highlight"><span class="n">T</span></code>. However, this brings up questions of destructors and similar for when the data goes away. It also gets in the way of caching. Is it possible for an implementation to cache the retrieved storage based solely on <code class="highlight"><span class="n">resource_identifier</span></code> since a destructor could run over the data? If destructors or constructors are run based on type <code class="highlight"><span class="n">T</span></code> then the data cannot be the same between template instantions even with the same <code class="highlight"><span class="n">resource_identifier</span></code>.</p>
-   <p>A way to help with this would be to <code class="highlight"><span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_trivially_destructible_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">></span> <span class="o">&amp;&amp;</span> <span class="n">std</span><span class="o">::</span><span class="n">is_trivially_constructible_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">></span><span class="p">)</span></code>, to not have to worry about such problems. The good news is that such a templated transformation can be applied to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> at a later date with no API breakage, provided the templated arguments are defaulted.</p>
+   <p>A way to help with this would be to <code class="highlight"><span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_trivial</span><span class="o">&lt;</span><span class="n">T</span><span class="o">></span><span class="p">)</span></code>, to not have to worry about such problems. The good news is that such a templated transformation can be applied to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> at a later date with no API breakage, provided the templated arguments are defaulted.</p>
    <p>We do not propose any of these future directions at this time.</p>
    <h2 class="heading settled" data-level="8" id="appendix"><span class="secno">8. </span><span class="content">Appendix</span><a class="self-link" href="#appendix"></a></h2>
    <h3 class="heading settled" data-level="8.1" id="appendix-sadness"><span class="secno">8.1. </span><span class="content">Sadness</span><a class="self-link" href="#appendix-sadness"></a></h3>
