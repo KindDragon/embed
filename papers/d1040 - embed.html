@@ -1227,7 +1227,7 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 60c7cf64c0efdd39a8c0261dfad14adb1da62902" name="generator">
-  <meta content="0b8bd05438f2a5db1ccb348448e262e76def91d2" name="document-revision">
+  <meta content="1eaaab812524f6c1a5f11b1b0f5ebd13fc69aa37" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1444,7 +1444,7 @@ pre .property::before, pre .property::after {
      <dd>
       <dd class="editor p-author h-card vcard"><span class="p-name fn">JeanHeyd Meneide</span>
      <dt>Audience:
-     <dd>EWG, LEWG, SG15
+     <dd>EWG, LEWG
      <dt>Project:
      <dd>ISO JTC1/SC22/WG21: Programming Language C++
      <dt>Current Source:
@@ -1467,7 +1467,12 @@ pre .property::before, pre .property::after {
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#changelog"><span class="secno">1</span> <span class="content">Revision History</span></a>
+    <li>
+     <a href="#changelog"><span class="secno">1</span> <span class="content">Revision History</span></a>
+     <ol class="toc">
+      <li><a href="#changelog-r1"><span class="secno">1.1</span> <span class="content">Revision 1</span></a>
+      <li><a href="#changelog-r0"><span class="secno">1.2</span> <span class="content">Revision 0</span></a>
+     </ol>
     <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
     <li><a href="#scope"><span class="secno">3</span> <span class="content">Scope and Impact</span></a>
     <li>
@@ -1537,17 +1542,13 @@ pre .property::before, pre .property::after {
    <p>Accessing external resources at compile-time and making them available to the language and user.</p>
    <p>This paper introduces a function <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> in the <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code> header for pulling resources at compile-time into a program and optionally guaranteeing that they are stored in the resulting program in an implementation-defined manner.</p>
    <h2 class="heading settled" data-level="1" id="changelog"><span class="secno">1. </span><span class="content">Revision History</span><a class="self-link" href="#changelog"></a></h2>
-   <ul>
-    <li data-md="">
-     <p>r1</p>
-     <p>Create future directions section.</p>
-     <p>Change <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminated</span></code> to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>.</p>
-     <p>Add more code demonstrating the old way and motivating examples.</p>
-     <p>Incorporate LEWG feedback, particularly alignment requirements illuminated by Odin Holmes and Niall Douglass. Add a feature macro on top of having <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>.</p>
-    <li data-md="">
-     <p>r0</p>
-     <p>Initial release.</p>
-   </ul>
+   <h3 class="heading settled" data-level="1.1" id="changelog-r1"><span class="secno">1.1. </span><span class="content">Revision 1</span><a class="self-link" href="#changelog-r1"></a></h3>
+   <p>Create future directions section, follow up on Library Evolution Working Group comments.</p>
+   <p>Change <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminated</span></code> to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed_options</span><span class="o">::</span><span class="n">null_terminate</span></code>.</p>
+   <p>Add more code demonstrating the old way and motivating examples.</p>
+   <p>Incorporate LEWG feedback, particularly alignment requirements illuminated by Odin Holmes and Niall Douglass. Add a feature macro on top of having <code class="highlight"><span class="n">__has_include</span><span class="p">(</span> <span class="o">&lt;</span><span class="n">embed</span><span class="o">></span> <span class="p">)</span></code>.</p>
+   <h3 class="heading settled" data-level="1.2" id="changelog-r0"><span class="secno">1.2. </span><span class="content">Revision 0</span><a class="self-link" href="#changelog-r0"></a></h3>
+   <p>Initial release.</p>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p>Every C and C++ programmer -- at some point -- attempts to <code class="highlight"><span class="cp">#include</span></code> large chunks of non-C++ data into their code. Of course, <code class="highlight"><span class="cp">#include</span></code> expects the format of the data to be source code, and thusly the program fails with spectacular lexer errors. Thusly, many different tools and practices were adapted to handle this, as far back as 1995 with the <code class="highlight"><span class="n">xxd</span></code> tool. Many industries need such functionality, including (but hardly limited to):</p>
    <ul>

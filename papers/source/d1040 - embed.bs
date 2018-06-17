@@ -2,7 +2,7 @@
 Title: std::embed
 Shortname: P1040
 Revision: 1
-Audience: EWG, LEWG, SG15
+Audience: EWG, LEWG
 Status: P
 Group: WG21
 URL: 
@@ -24,9 +24,9 @@ This paper introduces a function `std::embed` in the `<embed>` header for pullin
 
 # Revision History # {#changelog}
 
-- r1
+## Revision 1 ## {#changelog-r1}
 
-	Create future directions section.
+	Create future directions section, follow up on Library Evolution Working Group comments.
 
 	Change `std::embed_options::null_terminated` to `std::embed_options::null_terminate`.
     
@@ -34,7 +34,7 @@ This paper introduces a function `std::embed` in the `<embed>` header for pullin
 
 	Incorporate LEWG feedback, particularly alignment requirements illuminated by Odin Holmes and Niall Douglass. Add a feature macro on top of having `__has_include( <embed> )`.
 
-- r0
+## Revision 0 ## {#changelog-r0}
 
     Initial release.
 
