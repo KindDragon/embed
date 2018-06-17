@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: std::embed
 Shortname: P1040
-Revision: 2
+Revision: 1
 Audience: EWG, LEWG, SG15
 Status: P
 Group: WG21
@@ -11,20 +11,22 @@ URL:
 !Implementation: <a href="https://github.com/ThePhD/embed-implementation">https://github.com/ThePhD/embed-implementation</a>
 Repository: ThePhD/embed
 Editor: JeanHeyd Meneide
-Abstract: Accessing external resources at compile-time and making them available to the language and user.
+Abstract: > I'm very keen on std::embed. I've been hand-embedding data in executables for NEARLY FORTY YEARS now. — <cite>Guy "Hatcat" Davidson, June 15, 2018</cite>
+
 Date: 2018-06-06
 Markup Shorthands: markdown yes, biblio yes, markup yes
 </pre>
 
+Accessing external resources at compile-time and making them available to the language and user.
+
 This paper introduces a function `std::embed` in the `<embed>` header for pulling resources at compile-time into a program and optionally guaranteeing that they are stored in the resulting program in an implementation-defined manner.
+
 
 # Revision History # {#changelog}
 
-- r2
+- r1
 
 	Create future directions section.
-
-- r1
 
 	Change `std::embed_options::null_terminated` to `std::embed_options::null_terminate`.
     
@@ -129,7 +131,6 @@ int main() {
 	std::cout << json_view << std::endl;
 	return 0;
 }
-
 </xmp>
 
 This happens often in the case of people who have not yet taken the "add a build step" mantra to heart. The biggest problem is that the above C++-ready source file is no longer valid in as its original representation, meaning the file as-is cannot be passed to any validation tools, schema checkers, or otherwise. This hurts the portability and interop story of C++ with other tools and languages.
@@ -268,31 +269,35 @@ Some people feel that `embed` is not a good name for this function. Therefore, h
 
 1. Is a magic library function in a header the most desirable? Other proposals for other avenies have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.
 
-2. Is `std::vector<std::byte>` in `constexpr` format better as a return value (i.e., do we depend on Louis Dionne, Roger Orr, and Daveed Vandevoorde's work in [[p0784r3]], [[p1002r0]], [[p1004r0]] and [[p1023r0]])?
-
-Tentative Answer: No, but can be persuaded otherwise. Do not want to lock this feature down as a dependency to these other types.
-
 ### Answered Questions ### {#help-bikeshed-answered}
 
-Question: Should `std::embedded` ([[p1040r0|std::embed revision 0]]) just be replaced with `std::span`?
+> Is `std::vector<std::byte>` in `constexpr` format better as a return value (i.e., do we depend on Louis Dionne, Roger Orr, and Daveed Vandevoorde's work in [[p0784r3]], [[p1002r0]], [[p1004r0]] and [[p1023r0]])?
 
-Answer: Yes. `std::span` covers all of the use cases here, is `constexpr`, and makes the most sense. `std::array<const byte, N>` cannot be returned because `N` cannot be named until it is deduced by the actual value being returned. It is a poor interface to force the user to always `decltype` the return. (LEWG confirmed.)
+No, but can be persuaded otherwise. Do not want to lock this feature down as a dependency to these other papers in-flight.
 
-Question: Should the return `std::span` be const-qualified, as in `std::span<const std::byte>`?
+> Is it desireable to make `std::embed` templated so it can return other kinds of views / types at constexpr time, which does not yet have a concept of a constexpr `reinterpret_cast` or `std::bless` + `std::launder`?
 
-Answer: Yes. (LEWG confirmed.)
+Yes.
 
-Question: *What is the lookup scheme for files and other resources?*
+> Should `std::embedded` ([[p1040r0|std::embed revision 0]]) just be replaced with `std::span`?
 
-Answer: Implementation defined. We expect compilers to expose an option similar to `--embed-paths=...`, `/EMBEDPATH:...`, or whatever tickles the implementer's fancy. (LEWG confirmed.)
+Yes. `std::span` covers all of the use cases here, is `constexpr`, and makes the most sense. `std::array<const byte, N>` cannot be returned because `N` cannot be named until it is deduced by the actual value being returned. It is a poor interface to force the user to always `decltype` the return. (LEWG confirmed.)
 
-Question: *Pulling in large data files on every compile might be expensive?*
+> Should the return `std::span` be const-qualified, as in `std::span<const std::byte>`?
 
-Answer: We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a frequent problem past the first compilation.
+Yes. (LEWG confirmed.)
 
-Question: *Is this more suitable for WG14 (the standards C committee) rather than WG21 (the standards C++ committee)?*
+> What is the lookup scheme for files and other resources?
 
-Answer: We do not think that the C standards committee will be the best place for some feature of this variety. All of the typical solutions that would work in C were rejected previously (preprocessor or special literal). Indication has shown that the C standards committee might be able to support this idea and come up with a better design than WG21 or provide more fine-grained mechanisms for it, but there is no evidence that they are either interested or have the time. (Raised in LEWG, confirmed in general post-LEWG discussion.)
+Implementation defined. We expect compilers to expose an option similar to `--embed-paths=...`, `/EMBEDPATH:...`, or whatever tickles the implementer's fancy. (LEWG confirmed.)
+
+> Pulling in large data files on every compile might be expensive?
+
+We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a frequent problem past the first compilation.
+
+> Is this more suitable for WG14 (the standards C committee) rather than WG21 (the standards C++ committee)?
+
+The author does not think that the C standards committee will be the best place for some feature of this variety at this time. All of the typical solutions that would work in C were rejected previously (preprocessor or special literal). Indication has shown that the C standards committee might be able to support this idea and come up with a better design than WG21 or provide more fine-grained mechanisms for it, but there is no evidence that they are either interested or have the time. (Raised in LEWG, confirmed in general post-LEWG discussion.)
 
 # Header Overview # {#synopsis}
 
@@ -333,11 +338,11 @@ namespace std {
 } // namespace std
 </xmp>
 
-1. The implementation defines what strings it accepts for `resource_identifier`. [ Note -- It is the hope that compiler vendors will provide a mechanism similar to include paths for finding things on the local filesystem. -- End Note]
+1. The implementation defines what strings it accepts for `resource_identifier`. [Note— It is the hope that compiler vendors will provide a mechanism similar to include paths for finding things on the local filesystem. — End Note]
 
 2. If the function succeeds, then the bytes visible are aligned to the boundary specified by the 
 
-3. If this function is called at runtime, then the behavior is unspecified.
+3. If this function is called at runtime, then the behavior is unspecified. [Note— A valid implementation can declare a runtime usage ill-formed and provide a diagnostic. — End Note]
 
 # Future Direction # {#future}
 
@@ -354,7 +359,9 @@ constexpr span<const T> embed(
 );
 </xmp>
 
-This would supply the data and view it as a type `T`. However, this brings up questions of destructors and similar for when the data goes away. It also gets in the way of caching: is it possible for an implementation to cache the retrieved storage based on `resource_identifier` and _also_ the returned object, since a destructor could run over the data? A way to help with this would be to `static_assert(std::is_trivially_destructible_v<T> && std::is_trivially_constructible_v<T>)`, to not have to worry about such problems. The good news is that such a templated transformation can be applied to `std::embed` at a later date with no API breakage, provided the templated arguments are defaulted.
+This would supply the data and view it as a type `T`. However, this brings up questions of destructors and similar for when the data goes away. It also gets in the way of caching. Is it possible for an implementation to cache the retrieved storage based solely on `resource_identifier` since a destructor could run over the data? If destructors or constructors are run based on type `T` then the data cannot be the same between template instantions even with the same `resource_identifier`.
+
+A way to help with this would be to `static_assert(std::is_trivial<T>)`, to not have to worry about such problems. The good news is that such a templated transformation can be applied to `std::embed` at a later date with no API breakage, provided the templated arguments are defaulted.
 
 We do not propose any of these future directions at this time.
 

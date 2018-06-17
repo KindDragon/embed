@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>p1040R2: std::embed</title>
+  <title>p1040R1: std::embed</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1226,8 +1226,8 @@ Possible extra rowspan handling
       text-align: center;
     }
   </style>
-  <meta content="Bikeshed version 1a927b7d2ff9a70dcdc5dc9f892fd154b7b64097" name="generator">
-  <meta content="6d5d511c126387bc8a7e9ab25f4da02659aaa6c5" name="document-revision">
+  <meta content="Bikeshed version 60c7cf64c0efdd39a8c0261dfad14adb1da62902" name="generator">
+  <meta content="4c4e3e91072c45d04d0812cbbfeee4d0e28a6ab1" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1436,7 +1436,7 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">p1040R2<br>std::embed</h1>
+   <h1 class="p-name no-ref" id="title">p1040R1<br>std::embed</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2018-06-06">6 June 2018</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -1460,7 +1460,9 @@ pre .property::before, pre .property::after {
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>Accessing external resources at compile-time and making them available to the language and user.</p>
+   <blockquote>
+    <p>I’m very keen on std::embed. I’ve been hand-embedding data in executables for NEARLY FORTY YEARS now. — <cite>Guy "Hatcat" Davidson, June 15, 2018</cite></p>
+   </blockquote>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
@@ -1532,6 +1534,7 @@ pre .property::before, pre .property::after {
    </ol>
   </nav>
   <main>
+   <p>Accessing external resources at compile-time and making them available to the language and user.</p>
    <p>This paper introduces a function <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> in the <code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code> header for pulling resources at compile-time into a program and optionally guaranteeing that they are stored in the resulting program in an implementation-defined manner.</p>
    <h2 class="heading settled" data-level="1" id="changelog"><span class="secno">1. </span><span class="content">Revision History</span><a class="self-link" href="#changelog"></a></h2>
    <ul>
@@ -1748,21 +1751,36 @@ pre .property::before, pre .property::after {
    <ol>
     <li data-md="">
      <p>Is a magic library function in a header the most desirable? Other proposals for other avenies have fallen flat and not garnered enough support, but the discussion around previous features has only indicated distate, never a definitive preference for where to go. This is the most important question to be answered as soon as possible.</p>
-    <li data-md="">
-     <p>Is <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code> in <code class="highlight"><span class="k">constexpr</span></code> format better as a return value (i.e., do we depend on Louis Dionne, Roger Orr, and Daveed Vandevoorde’s work in <a data-link-type="biblio" href="#biblio-p0784r3">[p0784r3]</a>, <a data-link-type="biblio" href="#biblio-p1002r0">[p1002r0]</a>, <a data-link-type="biblio" href="#biblio-p1004r0">[p1004r0]</a> and <a data-link-type="biblio" href="#biblio-p1023r0">[p1023r0]</a>)?</p>
    </ol>
-   <p>Tentative Answer: No, but can be persuaded otherwise. Do not want to lock this feature down as a dependency to these other types.</p>
    <h4 class="heading settled" data-level="5.2.3" id="help-bikeshed-answered"><span class="secno">5.2.3. </span><span class="content">Answered Questions</span><a class="self-link" href="#help-bikeshed-answered"></a></h4>
-   <p>Question: Should <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embedded</span></code> (<a data-link-type="biblio" href="#biblio-p1040r0">std::embed revision 0</a>) just be replaced with <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code>?</p>
-   <p>Answer: Yes. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> covers all of the use cases here, is <code class="highlight"><span class="k">constexpr</span></code>, and makes the most sense. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">byte</span><span class="p">,</span> <span class="n">N</span><span class="o">></span></code> cannot be returned because <code class="highlight"><span class="n">N</span></code> cannot be named until it is deduced by the actual value being returned. It is a poor interface to force the user to always <code class="highlight"><span class="k">decltype</span></code> the return. (LEWG confirmed.)</p>
-   <p>Question: Should the return <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> be const-qualified, as in <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code>?</p>
-   <p>Answer: Yes. (LEWG confirmed.)</p>
-   <p>Question: <em>What is the lookup scheme for files and other resources?</em></p>
-   <p>Answer: Implementation defined. We expect compilers to expose an option similar to <code class="highlight"><span class="o">--</span><span class="n">embed</span><span class="o">-</span><span class="n">paths</span><span class="o">=</span><span class="p">...</span></code>, <code class="highlight"><span class="o">/</span><span class="nl">EMBEDPATH</span><span class="p">:...</span></code>, or whatever tickles the implementer’s fancy. (LEWG confirmed.)</p>
-   <p>Question: <em>Pulling in large data files on every compile might be expensive?</em></p>
-   <p>Answer: We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a frequent problem past the first compilation.</p>
-   <p>Question: <em>Is this more suitable for WG14 (the standards C committee) rather than WG21 (the standards C++ committee)?</em></p>
-   <p>Answer: We do not think that the C standards committee will be the best place for some feature of this variety. All of the typical solutions that would work in C were rejected previously (preprocessor or special literal). Indication has shown that the C standards committee might be able to support this idea and come up with a better design than WG21 or provide more fine-grained mechanisms for it, but there is no evidence that they are either interested or have the time. (Raised in LEWG, confirmed in general post-LEWG discussion.)</p>
+   <blockquote>
+    <p>Is <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code> in <code class="highlight"><span class="k">constexpr</span></code> format better as a return value (i.e., do we depend on Louis Dionne, Roger Orr, and Daveed Vandevoorde’s work in <a data-link-type="biblio" href="#biblio-p0784r3">[p0784r3]</a>, <a data-link-type="biblio" href="#biblio-p1002r0">[p1002r0]</a>, <a data-link-type="biblio" href="#biblio-p1004r0">[p1004r0]</a> and <a data-link-type="biblio" href="#biblio-p1023r0">[p1023r0]</a>)?</p>
+   </blockquote>
+   <p>No, but can be persuaded otherwise. Do not want to lock this feature down as a dependency to these other papers in-flight.</p>
+   <blockquote>
+    <p>Is it desireable to make <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> templated so it can return other kinds of views / types at constexpr time, which does not yet have a concept of a constexpr <code class="highlight"><span class="k">reinterpret_cast</span></code> or <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">bless</span></code> + <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">launder</span></code>?</p>
+   </blockquote>
+   <p>Yes.</p>
+   <blockquote>
+    <p>Should <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embedded</span></code> (<a data-link-type="biblio" href="#biblio-p1040r0">std::embed revision 0</a>) just be replaced with <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code>?</p>
+   </blockquote>
+   <p>Yes. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> covers all of the use cases here, is <code class="highlight"><span class="k">constexpr</span></code>, and makes the most sense. <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">byte</span><span class="p">,</span> <span class="n">N</span><span class="o">></span></code> cannot be returned because <code class="highlight"><span class="n">N</span></code> cannot be named until it is deduced by the actual value being returned. It is a poor interface to force the user to always <code class="highlight"><span class="k">decltype</span></code> the return. (LEWG confirmed.)</p>
+   <blockquote>
+    <p>Should the return <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span></code> be const-qualified, as in <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">span</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">byte</span><span class="o">></span></code>?</p>
+   </blockquote>
+   <p>Yes. (LEWG confirmed.)</p>
+   <blockquote>
+    <p>What is the lookup scheme for files and other resources?</p>
+   </blockquote>
+   <p>Implementation defined. We expect compilers to expose an option similar to <code class="highlight"><span class="o">--</span><span class="n">embed</span><span class="o">-</span><span class="n">paths</span><span class="o">=</span><span class="p">...</span></code>, <code class="highlight"><span class="o">/</span><span class="nl">EMBEDPATH</span><span class="p">:...</span></code>, or whatever tickles the implementer’s fancy. (LEWG confirmed.)</p>
+   <blockquote>
+    <p>Pulling in large data files on every compile might be expensive?</p>
+   </blockquote>
+   <p>We fully expect implementations to employ techniques already in use for compilation dependency tracking to ensure this is not a frequent problem past the first compilation.</p>
+   <blockquote>
+    <p>Is this more suitable for WG14 (the standards C committee) rather than WG21 (the standards C++ committee)?</p>
+   </blockquote>
+   <p>The author does not think that the C standards committee will be the best place for some feature of this variety at this time. All of the typical solutions that would work in C were rejected previously (preprocessor or special literal). Indication has shown that the C standards committee might be able to support this idea and come up with a better design than WG21 or provide more fine-grained mechanisms for it, but there is no evidence that they are either interested or have the time. (Raised in LEWG, confirmed in general post-LEWG discussion.)</p>
    <h2 class="heading settled" data-level="6" id="synopsis"><span class="secno">6. </span><span class="content">Header Overview</span><a class="self-link" href="#synopsis"></a></h2>
    <p><code class="highlight"><span class="o">&lt;</span><span class="n">embed</span><span class="o">></span></code> Overview</p>
 <pre class="highlight"><span class="k">namespace</span> <span class="n">std</span> <span class="p">{</span>
@@ -1800,11 +1818,11 @@ pre .property::before, pre .property::after {
 </pre>
    <ol>
     <li data-md="">
-     <p>The implementation defines what strings it accepts for <code class="highlight"><span class="n">resource_identifier</span></code>. [ Note -- It is the hope that compiler vendors will provide a mechanism similar to include paths for finding things on the local filesystem. -- End Note]</p>
+     <p>The implementation defines what strings it accepts for <code class="highlight"><span class="n">resource_identifier</span></code>. [Note— It is the hope that compiler vendors will provide a mechanism similar to include paths for finding things on the local filesystem. — End Note]</p>
     <li data-md="">
      <p>If the function succeeds, then the bytes visible are aligned to the boundary specified by the</p>
     <li data-md="">
-     <p>If this function is called at runtime, then the behavior is unspecified.</p>
+     <p>If this function is called at runtime, then the behavior is unspecified. [Note— A valid implementation can declare a runtime usage ill-formed and provide a diagnostic. — End Note]</p>
    </ol>
    <h2 class="heading settled" data-level="7" id="future"><span class="secno">7. </span><span class="content">Future Direction</span><a class="self-link" href="#future"></a></h2>
    <p>Many developers in all spaces are concerned that <code class="highlight"><span class="k">constexpr</span></code> does not allow <code class="highlight"><span class="k">reinterpret_cast</span></code> to be used. This means that the bytes cannot be viewed -- at <code class="highlight"><span class="k">constexpr</span></code> time -- as more complex entities. There are 2 directions to solve this problem. This paper proposes neither of the fixes at this time.</p>
@@ -1816,7 +1834,8 @@ pre .property::before, pre .property::after {
   <span class="n">embed_options</span> <span class="n">options</span> <span class="o">=</span> <span class="n">embed_options</span><span class="o">::</span><span class="n">none</span> 
 <span class="p">);</span>
 </pre>
-   <p>This would supply the data and view it as a type <code class="highlight"><span class="n">T</span></code>. However, this brings up questions of destructors and similar for when the data goes away. It also gets in the way of caching: is it possible for an implementation to cache the retrieved storage based on <code class="highlight"><span class="n">resource_identifier</span></code> and _also_ the returned object, since a destructor could run over the data? A way to help with this would be to <code class="highlight"><span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_trivially_destructible_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">></span> <span class="o">&amp;&amp;</span> <span class="n">std</span><span class="o">::</span><span class="n">is_trivially_constructible_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">></span><span class="p">)</span></code>, to not have to worry about such problems. The good news is that such a templated transformation can be applied to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> at a later date with no API breakage, provided the templated arguments are defaulted.</p>
+   <p>This would supply the data and view it as a type <code class="highlight"><span class="n">T</span></code>. However, this brings up questions of destructors and similar for when the data goes away. It also gets in the way of caching. Is it possible for an implementation to cache the retrieved storage based solely on <code class="highlight"><span class="n">resource_identifier</span></code> since a destructor could run over the data? If destructors or constructors are run based on type <code class="highlight"><span class="n">T</span></code> then the data cannot be the same between template instantions even with the same <code class="highlight"><span class="n">resource_identifier</span></code>.</p>
+   <p>A way to help with this would be to <code class="highlight"><span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_trivially_destructible_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">></span> <span class="o">&amp;&amp;</span> <span class="n">std</span><span class="o">::</span><span class="n">is_trivially_constructible_v</span><span class="o">&lt;</span><span class="n">T</span><span class="o">></span><span class="p">)</span></code>, to not have to worry about such problems. The good news is that such a templated transformation can be applied to <code class="highlight"><span class="n">std</span><span class="o">::</span><span class="n">embed</span></code> at a later date with no API breakage, provided the templated arguments are defaulted.</p>
    <p>We do not propose any of these future directions at this time.</p>
    <h2 class="heading settled" data-level="8" id="appendix"><span class="secno">8. </span><span class="content">Appendix</span><a class="self-link" href="#appendix"></a></h2>
    <h3 class="heading settled" data-level="8.1" id="appendix-sadness"><span class="secno">8.1. </span><span class="content">Sadness</span><a class="self-link" href="#appendix-sadness"></a></h3>
